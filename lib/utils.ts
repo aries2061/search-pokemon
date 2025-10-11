@@ -1,10 +1,12 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import imageCompression from "browser-image-compression"
+import ColorThief from "colorthief"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
+
 
 export async function getDominantColor(
   imageUrl: string | undefined,
@@ -12,45 +14,108 @@ export async function getDominantColor(
 ): Promise<string> {
   if (!imageUrl) return `rgba(200, 200, 200, ${alpha})`
   
+  // Check if the image URL is from pokemondb.net which has CORS issues
+  if (imageUrl.includes('pokemondb.net')) {
+    console.warn(`Skipping color extraction for CORS-restricted image: ${imageUrl}`)
+    return `rgba(200, 200, 200, ${alpha})`
+  }
+  
   return new Promise((resolve) => {
     const img = new Image()
-    img.crossOrigin = "Anonymous"
+    
+    // Set up timeout to prevent hanging
+    const timeout = setTimeout(() => {
+      console.warn(`Image loading timeout for ${imageUrl}`)
+      resolve(`rgba(200, 200, 200, ${alpha})`)
+    }, 5000) // Reduced to 5 second timeout
+    
     img.onload = () => {
-      const canvas = document.createElement("canvas")
-      const ctx = canvas.getContext("2d")
-      canvas.width = img.width
-      canvas.height = img.height
-      ctx?.drawImage(img, 0, 0, img.width, img.height)
+      clearTimeout(timeout)
       
-      const imageData = ctx?.getImageData(0, 0, canvas.width, canvas.height).data
-      if (!imageData) {
-        resolve(`rgba(200, 200, 200, ${alpha})`)
-        return
-      }
-      
-      let r = 0, g = 0, b = 0, count = 0
-      
-      for (let i = 0; i < imageData.length; i += 4) {
-        r += imageData[i]
-        g += imageData[i + 1]
-        b += imageData[i + 2]
-        count++
-      }
-      
-      r = Math.floor(r / count)
-      g = Math.floor(g / count)
-      b = Math.floor(b / count)
-      
-      resolve(`rgba(${r}, ${g}, ${b}, ${alpha})`)
+      // Wait a bit to ensure the image is fully rendered
+      setTimeout(() => {
+        try {
+          // Check if image has valid dimensions
+          if (img.naturalWidth === 0 || img.naturalHeight === 0) {
+            console.warn(`Image has invalid dimensions: ${imageUrl}`)
+            resolve(`rgba(200, 200, 200, ${alpha})`)
+            return
+          }
+          
+          const colorThief = new ColorThief()
+          const dominantColor = colorThief.getColor(img)
+          
+          if (dominantColor && Array.isArray(dominantColor) && dominantColor.length === 3) {
+            const [r, g, b] = dominantColor
+            // Validate RGB values
+            if (typeof r === 'number' && typeof g === 'number' && typeof b === 'number' &&
+                r >= 0 && r <= 255 && g >= 0 && g <= 255 && b >= 0 && b <= 255) {
+              resolve(`rgba(${r}, ${g}, ${b}, ${alpha})`)
+              return
+            }
+          }
+          
+          console.warn(`Invalid color data extracted from ${imageUrl}`)
+          resolve(`rgba(200, 200, 200, ${alpha})`)
+        } catch (error) {
+          console.error('Error extracting dominant color:', error)
+          resolve(`rgba(200, 200, 200, ${alpha})`)
+        }
+      }, 100) // Small delay to ensure image is rendered
     }
     
-    img.onerror = () => {
+    img.onerror = (error) => {
+      clearTimeout(timeout)
+      console.warn(`Failed to load image at ${imageUrl}:`, error)
       resolve(`rgba(200, 200, 200, ${alpha})`)
     }
     
-    img.src = imageUrl
+    // Try different CORS settings
+    try {
+      img.crossOrigin = "anonymous"
+      img.src = imageUrl
+    } catch (error) {
+      clearTimeout(timeout)
+      console.error('Error setting image source:', error)
+      resolve(`rgba(200, 200, 200, ${alpha})`)
+    }
   })
 }
+
+
+// export async function getDominantColor(
+//   imageUrl: string | undefined,
+//   alpha: number = 0.3
+// ): Promise<string> {
+//   if (!imageUrl) return `rgba(200, 200, 200, ${alpha})`
+  
+//   return new Promise((resolve) => {
+//     const img = new Image()
+//     img.crossOrigin = "Anonymous"
+//     img.onload = () => {
+//       try {
+//         const colorThief = new ColorThief()
+//         const dominantColor = colorThief.getColor(img)
+        
+//         if (dominantColor && dominantColor.length === 3) {
+//           const [r, g, b] = dominantColor
+//           resolve(`rgba(${r}, ${g}, ${b}, ${alpha})`)
+//         } else {
+//           resolve(`rgba(200, 200, 200, ${alpha})`)
+//         }
+//       } catch (error) {
+//         console.error('Error extracting dominant color:', error)
+//         resolve(`rgba(200, 200, 200, ${alpha})`)
+//       }
+//     }
+    
+//     img.onerror = () => {
+//       resolve(`rgba(200, 200, 200, ${alpha})`)
+//     }
+    
+//     img.src = imageUrl
+//   })
+// }
 
 export async function downloadAndCompressImage(imageUrl: string, pokemonName: string): Promise<string> {
   try {

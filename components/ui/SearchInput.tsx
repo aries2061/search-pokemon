@@ -60,6 +60,10 @@ export function SearchInput({
     setShowSuggestions(!!value);
   };
 
+  const handleClearSearch = () => {
+    setQuery('');
+  };
+
   const handleSuggestionClick = (suggestion: string) => {
     setQuery(suggestion);
     onSearch(suggestion);
@@ -77,10 +81,22 @@ export function SearchInput({
           onChange={handleInputChange}
           onFocus={() => query.trim() && setShowSuggestions(true)}
           placeholder={placeholder}
-          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full px-4 py-2 border-3 border-blue-400 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
           aria-label="Search"
           autoComplete="off"
         />
+        {
+          query.trim() && (
+            <button 
+              type="button" 
+              onClick={handleClearSearch}
+              className="absolute right-10 bottom-1.25 p-2 hover:text-blue-600 transition-all cursor-pointer"
+              aria-label="Submit search"
+            >
+              <span className='text-xs bg-gray-400 rounded p-1 text-white'>Clear</span>
+            </button>
+          )
+        }
         <button 
           type="submit" 
           className="absolute right-2 p-2 text-gray-500 hover:text-blue-600 transition-colors"
@@ -109,9 +125,9 @@ export function SearchInput({
           className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto"
         >
           <ul className="py-1">
-            {suggestions.map((suggestion, index) => (
+            {suggestions.map((suggestion) => (
               <li 
-                key={index}
+                key={suggestion}
                 className="px-4 py-2 hover:bg-blue-100 cursor-pointer text-gray-700"
                 onClick={() => handleSuggestionClick(suggestion)}
               >

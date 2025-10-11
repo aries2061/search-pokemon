@@ -5,13 +5,12 @@ import { useQuery } from '@apollo/client/react';
 import { useEffect, Suspense, useState } from 'react';
 import { GET_POKEMON } from '@/lib/graphql/queries';
 import { PokemonQueryResponse } from '@/lib/types';
-import Image from 'next/image';
-import { ArrowLeft } from 'lucide-react';
 import PokemonNotFound from '@/components/not-found';
 import { downloadAndCompressImage, useOnlineStatus } from '@/lib/utils';
+import { PokemonDetails } from '@/components/ui/PokemonDetails';
 
-import { PokemonResultProps, PokemonDataProps } from '@/lib/interfaces/components';
-import { Pokemon, Attack } from '@/lib/types';
+import { PokemonResultProps } from '@/lib/interfaces/components';
+import { Pokemon } from '@/lib/types';
 
 // Loading component for Suspense fallback
 function PokemonLoading() {
@@ -25,227 +24,12 @@ function PokemonLoading() {
   );
 }
 
-function PokemonData({ pokemon, onEvolutionClick, onBackClick }: PokemonDataProps) {
-  return (
-    <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-      <div className="p-3 sm:p-6">
-        <button 
-          onClick={onBackClick}
-          className="flex items-center text-blue-600 hover:text-blue-800 mb-4 transition-colors cursor-pointer"
-          aria-label="Go back to home page"
-        >
-          <ArrowLeft className="w-4 h-4 mr-1" />
-          <span>Back</span>
-        </button>
-
-        {/* Pokémon Details */}
-        <div className="flex flex-col md:flex-row items-center border-1 border-gray-500 sm:border-0 rounded-lg p-3">
-          <div className="relative w-35 h-35 mb-2 md:mb-0 md:mr-6">
-            {pokemon.image && (
-              <Image
-                src={pokemon.image}
-                alt={pokemon.name}
-                fill
-                className="object-contain"
-                priority
-              />
-            )}
-          </div>
-          <div className="flex-1">
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-2xl font-bold">
-                {pokemon.name} <span className="text-gray-100 text-xs p-1 rounded bg-blue-600">{pokemon.classification}</span>
-              </h2>
-              <span className="text-gray-500">#{pokemon.number}</span>
-            </div>
-            <div className="flex flex-wrap gap-2 mb-3">
-              {pokemon.types.map((type: string) => (
-                <span
-                  key={type}
-                  className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
-                >
-                  {type}
-                </span>
-              ))}
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <p className="text-sm text-gray-500">Height : 
-                    <span className="text-gray-800 ml-2 text-xs lg:text-lg">
-                      {pokemon.height.minimum} - {pokemon.height.maximum} 
-                    </span>
-                </p>
-                <p className="text-sm text-gray-500">Weight : 
-                  <span className="text-gray-800 ml-2 text-xs lg:text-lg">
-                    {pokemon.weight.minimum} - {pokemon.weight.maximum}
-                  </span>
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Max HP : 
-                  <span className="text-gray-800 ml-2 text-xs lg:text-lg">
-                    {pokemon.maxHP}
-                  </span>
-                </p>
-                <p className="text-sm text-gray-500">Max CP : 
-                  <span className="text-gray-800 ml-2 text-xs lg:text-lg">
-                    {pokemon.maxCP}
-                  </span>
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Centered Breakline */}
-        <div className="flex justify-center my-4 sm:my-5">
-          <hr className="w-[100%] sm:w-[75%] border-gray-300" />
-        </div>
-        
-        {/* Pokémon Details - 3 Column Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Column 1: Attacks */}
-          {pokemon.attacks && (
-            <div className="col-span-1 flex flex-col items-start border-1 border-gray-300 rounded-lg p-1 pl-2">
-              <h3 className="text-lg font-semibold mb-3 flex items-center">
-                <Image src="/game-icon/sword.svg" width={24} height={24} alt="Sword icon" className="mr-1" /> 
-                <span>Attacks</span>
-              </h3>
-              <div className="grid grid-cols-2 gap-2 w-full pl-2">
-                {/* Fast Attacks */}
-                <div className="flex flex-col items-start">
-                  <h4 className="text-sm font-medium mb-1">Fast</h4>
-                  <div className="space-y-1 w-full">
-                    {pokemon.attacks.fast.map((attack: Attack) => (
-                      <div
-                        key={attack.name}
-                        className="flex justify-between items-start p-1 rounded text-xs"
-                      >
-                        <div className="truncate mr-1">
-                          <span className="font-medium">{attack.name}</span>
-                          <span className="ml-1 text-xs text-gray-800">
-                            {attack.type}
-                          </span>
-                          <span className="bg-red-600 text-white font-bold ml-3 px-1 py-0.5 rounded-md text-xs whitespace-nowrap">{attack.damage}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                {/* Special Attacks */}
-                <div className="flex flex-col items-start">
-                  <h4 className="text-sm font-medium mb-1">Special</h4>
-                  <div className="space-y-1 w-full">
-                    {pokemon.attacks.special.map((attack: Attack) => (
-                      <div
-                        key={attack.name}
-                        className="flex justify-between items-center p-1 rounded text-xs"
-                      >
-                        <div className="truncate mr-1">
-                          <span className="font-medium">{attack.name}</span>
-                          <span className="ml-1 text-xs text-gray-500">
-                            {attack.type}
-                          </span>
-                        <span className="bg-red-600 text-white font-bold ml-2 px-1 py-0.5 rounded-md text-xs whitespace-nowrap">{attack.damage}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Column 2: Resistances */}
-          {pokemon.resistant && (
-            <div className="col-span-1 flex flex-col items-center border-1 border-gray-300 rounded-lg p-1">
-              <h3 className="text-lg font-semibold mb-3 flex items-center">
-                <Image src="/game-icon/shield.svg" width={24} height={24} alt="Shield icon" className="mr-1" /> 
-                <span>Resistances</span>
-              </h3>
-              <div className="grid grid-cols-2 gap-2 w-full">
-                {pokemon.resistant.map((type: string) => (
-                  <div
-                    key={type}
-                    className="flex justify-center items-center p-1 bg-green-50 rounded text-xs"
-                  >
-                    <span className="font-medium text-green-700">{type}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Column 3: Weaknesses */}
-          {pokemon.weaknesses && (
-            <div className="col-span-3 flex flex-col items-start">
-              <h3 className="text-lg font-semibold mb-3 flex items-center justify-start">
-                <Image src="/game-icon/weak.svg" width={24} height={24} alt="Weakness icon" className="mr-1" /> 
-                <span>Weaknesses</span>
-                {
-                pokemon.weaknesses.map((type: string) => (
-                    <div
-                      key={type}
-                      className="flex justify-center items-center p-1 bg-red-50 rounded text-xs ml-2"
-                    >
-                      <span className="font-medium text-red-700">{type}</span>
-                    </div>
-                  ))
-                }
-              </h3>
-            </div>
-          )}
-        </div>
-
-        {/* Evolution Requirements Section */}
-        {pokemon.evolutionRequirements && (
-          <div className="mt-6">
-            <h3 className="text-lg font-semibold mb-2">Evolution Requirements</h3>
-            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <p className="text-sm">
-                <span className="font-medium">Requires:</span> {pokemon.evolutionRequirements.amount} {pokemon.evolutionRequirements.name}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Evolutions Section */}
-        {pokemon.evolutions && pokemon.evolutions.length > 0 && (
-          <div className="mt-6">
-            <h3 className="text-lg font-semibold mb-4">Evolutions</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {pokemon.evolutions.map((evolution: Pokemon) => (
-                <div
-                  key={evolution.id}
-                  className="flex flex-col items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-                  onClick={() => onEvolutionClick(evolution.name)}
-                >
-                  <div className="relative w-20 h-20 mb-2">
-                    {evolution.image && (
-                      <Image
-                        src={evolution.image}
-                        alt={evolution.name}
-                        fill
-                        className="object-contain"
-                      />
-                    )}
-                  </div>
-                  <span className="text-sm font-medium">{evolution.name}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 export default function PokemonResult({ pokemonName }: PokemonResultProps) {
   const router = useRouter();
-  const { isOnline } = useOnlineStatus();
+  const isOnline = useOnlineStatus();
   const [localPokemon, setLocalPokemon] = useState<Pokemon | null>(null);
-  const [isLocalLoading, setIsLocalLoading] = useState(true);
+  const [isLocalLoading, setIsLocalLoading] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   
   // Only run GraphQL query if online
   const { loading: graphqlLoading, error: graphqlError, data } = useQuery<PokemonQueryResponse>(GET_POKEMON, {
@@ -262,9 +46,14 @@ export default function PokemonResult({ pokemonName }: PokemonResultProps) {
     router.replace(`/?search=${encodeURIComponent(name)}`);
   };
   
+  // Set mounted state after component mounts
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+  
   // Check localStorage first for the Pokemon data
   useEffect(() => {
-    if (!pokemonName) {
+    if (!pokemonName || !isMounted) {
       setIsLocalLoading(false);
       return;
     }
@@ -280,13 +69,14 @@ export default function PokemonResult({ pokemonName }: PokemonResultProps) {
     }
     
     setIsLocalLoading(false);
-  }, [pokemonName]);
+  }, [pokemonName, isMounted]);
   
   // Store found Pokemon data in localStorage - moved before conditional returns
   useEffect(() => {
-    if (data?.pokemon) {
-      const pokemon = data.pokemon;
-      const recentSearches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
+    if (!data?.pokemon || !isMounted) return;
+    
+    const pokemon = data.pokemon;
+    const recentSearches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
       
       // Download and compress the image
       const downloadImage = async () => {
@@ -338,8 +128,7 @@ export default function PokemonResult({ pokemonName }: PokemonResultProps) {
       };
       
       downloadImage();
-    }
-  }, [data]);
+  }, [data, isMounted]);
 
   if (!pokemonName) {
     return (
@@ -366,7 +155,7 @@ export default function PokemonResult({ pokemonName }: PokemonResultProps) {
     
     return (
       <Suspense fallback={<PokemonLoading />}>
-        <PokemonData 
+        <PokemonDetails 
           pokemon={localPokemon} 
           onEvolutionClick={handleEvolutionClick}
           onBackClick={handleBackClick}
@@ -394,7 +183,7 @@ export default function PokemonResult({ pokemonName }: PokemonResultProps) {
   return (
     <Suspense fallback={<PokemonLoading />}>
       {pokemon && (
-        <PokemonData 
+        <PokemonDetails 
           pokemon={pokemon} 
           onEvolutionClick={handleEvolutionClick}
           onBackClick={handleBackClick}

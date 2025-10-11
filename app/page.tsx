@@ -20,6 +20,7 @@ function HomeContent() {
   const [recentSearchPokemons, setRecentSearchPokemons] = useState<Pokemon[]>([]);
   const [totalPages, setTotalPages] = useState(1);
   const [shouldFetchNames, setShouldFetchNames] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -33,9 +34,14 @@ function HomeContent() {
     }
   }, [searchQuery]);
 
+  // Set mounted state after component mounts
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   // On first load, populate localStorage with all Pokémon names if missing
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (!isMounted) return;
     try {
       const existing = localStorage.getItem('pokemonNames');
       if (!existing) {
@@ -45,7 +51,7 @@ function HomeContent() {
       // If localStorage access fails, skip silently
       console.error('Failed to access localStorage:', e);
     }
-  }, []);
+  }, [isMounted]);
 
   // Fetch Pokémon names only when needed
   const { data: allPokemonsData } = useQuery<{ pokemons: { name: string }[] }>(GET_POKEMONS, {
@@ -55,7 +61,7 @@ function HomeContent() {
 
   // Persist fetched names to localStorage
   useEffect(() => {
-    if (!allPokemonsData?.pokemons || typeof window === 'undefined') return;
+    if (!allPokemonsData?.pokemons || !isMounted) return;
     try {
       const names = allPokemonsData.pokemons.map((p) => p.name);
       localStorage.setItem('pokemonNames', JSON.stringify(names));
@@ -65,24 +71,24 @@ function HomeContent() {
     } finally {
       setShouldFetchNames(false);
     }
-  }, [allPokemonsData]);
+  }, [allPokemonsData, isMounted]);
 
   // Load recent searches from localStorage
   useEffect(() => {
-    if (typeof window !== 'undefined' && !searchQuery) {
-      const recentSearches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
-      
-      // The recentSearches now contains complete Pokemon objects, no need to transform
-      const recentPokemonData = recentSearches;
-      
-      setTotalPages(Math.ceil(recentPokemonData.length / ITEMS_PER_PAGE));
-      
-      // Get current page of pokemon
-      const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-      const endIndex = startIndex + ITEMS_PER_PAGE;
-      setRecentSearchPokemons(recentPokemonData.slice(startIndex, endIndex));
-    }
-  }, [currentPage, searchQuery]);
+    if (!isMounted || searchQuery) return;
+    
+    const recentSearches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
+    
+    // The recentSearches now contains complete Pokemon objects, no need to transform
+    const recentPokemonData = recentSearches;
+    
+    setTotalPages(Math.ceil(recentPokemonData.length / ITEMS_PER_PAGE));
+    
+    // Get current page of pokemon
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    setRecentSearchPokemons(recentPokemonData.slice(startIndex, endIndex));
+  }, [currentPage, searchQuery, isMounted]);
 
   const handleSearch = (query: string) => {
     window.location.href = `/?search=${encodeURIComponent(query)}`;
@@ -90,21 +96,21 @@ function HomeContent() {
 
   return (
     <main className="min-h-screen p-2 md:p-8 bg-white sm:bg-transparent">
-      <div className="max-w-4xl mx-auto bg-white p-2 rounded-xl sm:p-7 sm:rounded-2xl sm:shadow-sm sm:shadow-amber-200">
-        <div className="text-center mb-4">
-          <div className="flex justify-center mb-4">
+      <div className="max-w-4xl mx-auto bg-white p-1 rounded-xl sm:p-5 sm:rounded-2xl sm:shadow-sm sm:shadow-amber-200">
+        <div className="flex justify-between text-center mb-4">
+          <div>
             <Image 
               src="/pokemon-logo.png" 
               alt="Pokemon Logo" 
-              width={250} 
-              height={110} 
+              width={140} 
+              height={80} 
               priority
+              style={{ height: 'auto' }}
             />
           </div>
-          <p className="text-gray-500 bold text-md sm:text-lg mb-12">
-            Search for any Pokémon to view detailed information
-          </p>
-          <SearchInput onSearch={handleSearch} initialValue={searchQuery} placeholder="Search for a Pokémon..." />
+          <div className='justify-end'>
+            <SearchInput onSearch={handleSearch} initialValue={searchQuery} placeholder="Search a Pokémon..." />
+          </div>
         </div>
 
         {searchQuery ? (
@@ -124,13 +130,13 @@ function HomeContent() {
                         setRecentSearchPokemons([]);
                         setTotalPages(1);
                       }}
-                      className="px-1 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm cursor-pointer"
+                      className="bg-red-400 text-white rounded hover:bg-red-500 text-sm cursor-pointer ml-2"
                     >
                       <Image
                         src="/game-icon/bin.svg"
                         alt="Clear Recent Icon"
-                        width={30}
-                        height={30}
+                        width={20}
+                        height={20}
                       />
                     </button>
                   </div>

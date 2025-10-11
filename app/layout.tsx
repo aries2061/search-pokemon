@@ -50,6 +50,7 @@ export default function RootLayout({
           backgroundPosition: "center",
           minHeight: "100vh"
         }}
+        suppressHydrationWarning={true}
       >
         <Providers>{children}</Providers>
       </body>

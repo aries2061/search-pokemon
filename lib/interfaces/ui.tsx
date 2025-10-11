@@ -47,3 +47,9 @@ export interface PokemonDetailsProps {
   pokemon: Pokemon;
   className?: string;
 }
+
+export interface PokemonDataProps {
+  pokemon: Pokemon;
+  onEvolutionClick: (name: string) => void;
+  onBackClick: () => void;
+}
