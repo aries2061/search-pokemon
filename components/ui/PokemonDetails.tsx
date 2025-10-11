@@ -13,15 +13,25 @@ export function PokemonDetails({ pokemon, className = '' }: PokemonDetailsProps)
       </div>
       
       <div className="pokemon-details-image-container">
-        <img 
-          src={pokemon.image || ''}
-          alt={pokemon.name}
-          className="pokemon-details-image"
-          onError={(e) => {
-            e.currentTarget.onerror = null;
-            e.currentTarget.src = '/icon.svg';
-          }}
-        />
+        {
+          pokemon.image? (
+            <Image
+              src={pokemon.image}
+              alt={pokemon.name}
+              width={20}
+              height={20}
+              className="object-contain w-[165px] h-[165px]"
+            />
+          ) : (
+            <Image
+              src="/icon.svg"
+              alt="Fallback Icon"
+              width={20}
+              height={20}
+              className="object-contain w-[165px] h-[165px]"  
+            />
+          )
+        }
       </div>
       
       <div className="pokemon-details-info">

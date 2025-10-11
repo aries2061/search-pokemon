@@ -11,6 +11,7 @@ import PokemonNotFound from '@/components/not-found';
 import { downloadAndCompressImage, useOnlineStatus } from '@/lib/utils';
 
 import { PokemonResultProps } from '@/lib/interfaces/components';
+import { Pokemon, Attack } from '@/lib/types';
 
 // Loading component for Suspense fallback
 function PokemonLoading() {
@@ -25,7 +26,13 @@ function PokemonLoading() {
 }
 
 // Pokemon data component that will be wrapped with Suspense
-function PokemonData({ pokemon, onEvolutionClick, onBackClick }: any) {
+interface PokemonDataProps {
+  pokemon: Pokemon;
+  onEvolutionClick: (name: string) => void;
+  onBackClick: () => void;
+}
+
+function PokemonData({ pokemon, onEvolutionClick, onBackClick }: PokemonDataProps) {
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden">
       <div className="p-3 sm:p-6">
@@ -40,7 +47,7 @@ function PokemonData({ pokemon, onEvolutionClick, onBackClick }: any) {
 
         {/* Pokémon Details */}
         <div className="flex flex-col md:flex-row items-center border-1 border-gray-500 sm:border-0 rounded-lg p-3">
-          <div className="relative w-48 h-48 mb-4 md:mb-0 md:mr-6">
+          <div className="relative w-35 h-35 mb-2 md:mb-0 md:mr-6">
             {pokemon.image && (
               <Image
                 src={pokemon.image}
@@ -53,13 +60,12 @@ function PokemonData({ pokemon, onEvolutionClick, onBackClick }: any) {
           </div>
           <div className="flex-1">
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-2xl font-bold">{pokemon.name}</h2>
+              <h2 className="text-2xl font-bold">
+                {pokemon.name} <span className="text-gray-100 text-xs p-1 rounded bg-blue-600">{pokemon.classification}</span>
+              </h2>
               <span className="text-gray-500">#{pokemon.number}</span>
             </div>
-            <div className="mb-4">
-              <p className="text-gray-600">{pokemon.classification}</p>
-            </div>
-            <div className="flex flex-wrap gap-2 mb-4">
+            <div className="flex flex-wrap gap-2 mb-3">
               {pokemon.types.map((type: string) => (
                 <span
                   key={type}
@@ -69,26 +75,30 @@ function PokemonData({ pokemon, onEvolutionClick, onBackClick }: any) {
                 </span>
               ))}
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-2">
               <div>
-                <p className="text-sm text-gray-500">Height</p>
-                <p>
-                  {pokemon.height.minimum} - {pokemon.height.maximum}
+                <p className="text-sm text-gray-500">Height : 
+                    <span className="text-gray-800 ml-2 text-xs lg:text-lg">
+                      {pokemon.height.minimum} - {pokemon.height.maximum} 
+                    </span>
+                </p>
+                <p className="text-sm text-gray-500">Weight : 
+                  <span className="text-gray-800 ml-2 text-xs lg:text-lg">
+                    {pokemon.weight.minimum} - {pokemon.weight.maximum}
+                  </span>
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Weight</p>
-                <p>
-                  {pokemon.weight.minimum} - {pokemon.weight.maximum}
+                <p className="text-sm text-gray-500">Max HP : 
+                  <span className="text-gray-800 ml-2 text-xs lg:text-lg">
+                    {pokemon.maxHP}
+                  </span>
                 </p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Max HP</p>
-                <p>{pokemon.maxHP}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Max CP</p>
-                <p>{pokemon.maxCP}</p>
+                <p className="text-sm text-gray-500">Max CP : 
+                  <span className="text-gray-800 ml-2 text-xs lg:text-lg">
+                    {pokemon.maxCP}
+                  </span>
+                </p>
               </div>
             </div>
           </div>
@@ -100,51 +110,51 @@ function PokemonData({ pokemon, onEvolutionClick, onBackClick }: any) {
         </div>
         
         {/* Pokémon Details - 3 Column Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Column 1: Attacks */}
           {pokemon.attacks && (
-            <div className="col-span-1 flex flex-col items-center border-1 border-gray-300 rounded-lg p-1">
+            <div className="col-span-1 flex flex-col items-start border-1 border-gray-300 rounded-lg p-1 pl-2">
               <h3 className="text-lg font-semibold mb-3 flex items-center">
                 <Image src="/game-icon/sword.svg" width={24} height={24} alt="Sword icon" className="mr-1" /> 
                 <span>Attacks</span>
               </h3>
-              <div className="grid grid-cols-2 gap-2 w-full">
+              <div className="grid grid-cols-2 gap-2 w-full pl-2">
                 {/* Fast Attacks */}
-                <div className="flex flex-col items-center">
+                <div className="flex flex-col items-start">
                   <h4 className="text-sm font-medium mb-1">Fast</h4>
                   <div className="space-y-1 w-full">
-                    {pokemon.attacks.fast.map((attack: any) => (
+                    {pokemon.attacks.fast.map((attack: Attack) => (
                       <div
                         key={attack.name}
-                        className="flex justify-between items-center p-1 bg-gray-50 rounded text-xs"
+                        className="flex justify-between items-start p-1 rounded text-xs"
                       >
                         <div className="truncate mr-1">
                           <span className="font-medium">{attack.name}</span>
-                          <span className="ml-1 text-xs text-gray-500">
+                          <span className="ml-1 text-xs text-gray-800">
                             {attack.type}
                           </span>
+                          <span className="bg-red-600 text-white font-bold ml-3 px-1 py-0.5 rounded-md text-xs whitespace-nowrap">{attack.damage}</span>
                         </div>
-                        <span className="bg-red-600 text-white font-bold px-1 py-0.5 rounded-md text-xs whitespace-nowrap">{attack.damage}</span>
                       </div>
                     ))}
                   </div>
                 </div>
                 {/* Special Attacks */}
-                <div className="flex flex-col items-center">
+                <div className="flex flex-col items-start">
                   <h4 className="text-sm font-medium mb-1">Special</h4>
                   <div className="space-y-1 w-full">
-                    {pokemon.attacks.special.map((attack: any) => (
+                    {pokemon.attacks.special.map((attack: Attack) => (
                       <div
                         key={attack.name}
-                        className="flex justify-between items-center p-1 bg-gray-50 rounded text-xs"
+                        className="flex justify-between items-center p-1 rounded text-xs"
                       >
                         <div className="truncate mr-1">
                           <span className="font-medium">{attack.name}</span>
                           <span className="ml-1 text-xs text-gray-500">
                             {attack.type}
                           </span>
+                        <span className="bg-red-600 text-white font-bold ml-2 px-1 py-0.5 rounded-md text-xs whitespace-nowrap">{attack.damage}</span>
                         </div>
-                        <span className="bg-red-600 text-white font-bold px-1 py-0.5 rounded-md text-xs whitespace-nowrap">{attack.damage}</span>
                       </div>
                     ))}
                   </div>
@@ -175,21 +185,21 @@ function PokemonData({ pokemon, onEvolutionClick, onBackClick }: any) {
 
           {/* Column 3: Weaknesses */}
           {pokemon.weaknesses && (
-            <div className="col-span-1 flex flex-col items-center border-1 border-gray-300 rounded-lg p-1">
-              <h3 className="text-lg font-semibold mb-3 flex items-center">
+            <div className="col-span-3 flex flex-col items-start">
+              <h3 className="text-lg font-semibold mb-3 flex items-center justify-start">
                 <Image src="/game-icon/weak.svg" width={24} height={24} alt="Weakness icon" className="mr-1" /> 
                 <span>Weaknesses</span>
+                {
+                pokemon.weaknesses.map((type: string) => (
+                    <div
+                      key={type}
+                      className="flex justify-center items-center p-1 bg-red-50 rounded text-xs ml-2"
+                    >
+                      <span className="font-medium text-red-700">{type}</span>
+                    </div>
+                  ))
+                }
               </h3>
-              <div className="grid grid-cols-2 gap-2 w-full">
-                {pokemon.weaknesses.map((type: string) => (
-                  <div
-                    key={type}
-                    className="flex justify-center items-center p-1 bg-red-50 rounded text-xs"
-                  >
-                    <span className="font-medium text-red-700">{type}</span>
-                  </div>
-                ))}
-              </div>
             </div>
           )}
         </div>
@@ -211,7 +221,7 @@ function PokemonData({ pokemon, onEvolutionClick, onBackClick }: any) {
           <div className="mt-6">
             <h3 className="text-lg font-semibold mb-4">Evolutions</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {pokemon.evolutions.map((evolution: any) => (
+              {pokemon.evolutions.map((evolution: Pokemon) => (
                 <div
                   key={evolution.id}
                   className="flex flex-col items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
@@ -241,7 +251,7 @@ function PokemonData({ pokemon, onEvolutionClick, onBackClick }: any) {
 export default function PokemonResult({ pokemonName }: PokemonResultProps) {
   const router = useRouter();
   const { isOnline } = useOnlineStatus();
-  const [localPokemon, setLocalPokemon] = useState<any>(null);
+  const [localPokemon, setLocalPokemon] = useState<Pokemon | null>(null);
   const [isLocalLoading, setIsLocalLoading] = useState(true);
   
   // Only run GraphQL query if online
@@ -268,7 +278,7 @@ export default function PokemonResult({ pokemonName }: PokemonResultProps) {
     
     setIsLocalLoading(true);
     const recentSearches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
-    const foundPokemon = recentSearches.find((p: any) => 
+    const foundPokemon = recentSearches.find((p: Pokemon) => 
       p.name.toLowerCase() === pokemonName.toLowerCase()
     );
     
@@ -299,7 +309,7 @@ export default function PokemonResult({ pokemonName }: PokemonResultProps) {
             };
             
             // Check if this Pokemon is already in recent searches
-            const existingIndex = recentSearches.findIndex((p: any) => p.id === pokemon.id);
+            const existingIndex = recentSearches.findIndex((p: Pokemon) => p.id === pokemon.id);
             
             if (existingIndex !== -1) {
               // Remove the existing entry
@@ -321,7 +331,7 @@ export default function PokemonResult({ pokemonName }: PokemonResultProps) {
             // Fallback to storing full data without compressed image
             const pokemonToStore = { ...pokemon };
             
-            const existingIndex = recentSearches.findIndex((p: any) => p.id === pokemon.id);
+            const existingIndex = recentSearches.findIndex((p: Pokemon) => p.id === pokemon.id);
             if (existingIndex !== -1) {
               recentSearches.splice(existingIndex, 1);
             }
@@ -390,11 +400,13 @@ export default function PokemonResult({ pokemonName }: PokemonResultProps) {
   // Render the Pokemon data with Suspense
   return (
     <Suspense fallback={<PokemonLoading />}>
-      <PokemonData 
-        pokemon={pokemon} 
-        onEvolutionClick={handleEvolutionClick}
-        onBackClick={handleBackClick}
-      />
+      {pokemon && (
+        <PokemonData 
+          pokemon={pokemon} 
+          onEvolutionClick={handleEvolutionClick}
+          onBackClick={handleBackClick}
+        />
+      )}
     </Suspense>
   );
 }

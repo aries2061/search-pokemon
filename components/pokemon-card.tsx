@@ -4,21 +4,42 @@ import React from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardTitle } from '@/components/ui/Card';
 import { PokemonCardProps } from '@/lib/interfaces/components';
+import Image from 'next/image';
 
 export default function PokemonCard({ pokemon }: PokemonCardProps) {
   return (
     <Link href={`/?search=${encodeURIComponent(pokemon.name)}`}>
       <Card className="h-full flex flex-col">
         <div className="flex justify-center flex-grow p-4">
-          <img 
-            src={pokemon.compressedImage || pokemon.image || ''}
-            alt={pokemon.name}
-            className="object-contain w-[165px] h-[165px]"
-            onError={(e) => {
-              e.currentTarget.onerror = null;
-              e.currentTarget.src = '/icon.svg';
-            }}
-          />
+          {
+            pokemon.compressedImage? (
+                <Image
+                  src={pokemon.compressedImage}
+                  alt="Compressed Image"
+                  width={20}
+                  height={20}
+                  className="object-contain w-[165px] h-[165px]"
+                />
+            ) : (
+              pokemon.image ? (
+                  <Image
+                    src={pokemon.image}
+                    alt="Original Image"
+                    width={20}
+                    height={20}
+                    className="object-contain w-[165px] h-[165px]"
+                  />
+              ) : (
+                <Image
+                  src="/icon.svg"
+                  alt="Fallback Icon"
+                  width={20}
+                  height={20}
+                  className="object-contain w-[165px] h-[165px]"
+                />
+              )
+            )
+          }
         </div>
         <CardContent className="text-center mt-auto pt-4 border-t border-gray-100">
           <CardTitle>{pokemon.name}</CardTitle>

@@ -1,83 +1,29 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useQuery } from '@apollo/client/react';
 import Image from 'next/image';
 import { SearchInput } from '@/components/ui/SearchInput';
 import PokemonResult from '@/components/pokemon-result';
 import PokemonGrid from '@/components/pokemon-grid';
-import PokemonNotFound from '@/components/not-found';
 import Pagination from '@/components/pagination';
 import { Pokemon } from '@/lib/types';
 import { GET_POKEMONS } from '@/lib/graphql/queries';
 
-export default function Home() {
+function HomeContent() {
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get('search') || '';
   
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 6;
   const [recentSearchPokemons, setRecentSearchPokemons] = useState<Pokemon[]>([]);
-  const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [shouldFetchNames, setShouldFetchNames] = useState(false);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
-
-  // Mock data for the grid since the API might be having issues
-  const mockPokemons = [
-    {
-      id: "UG9rZW1vbjowMDE=",
-      number: "001",
-      name: "Bulbasaur",
-      types: ["Grass", "Poison"],
-      image: "https://img.pokemondb.net/artwork/bulbasaur.jpg",
-      evolutions: [{ id: "UG9rZW1vbjowMDI=", name: "Ivysaur" }]
-    },
-    {
-      id: "UG9rZW1vbjowMDQ=",
-      number: "004",
-      name: "Charmander",
-      types: ["Fire"],
-      image: "https://img.pokemondb.net/artwork/charmander.jpg",
-      evolutions: [{ id: "UG9rZW1vbjowMDU=", name: "Charmeleon" }]
-    },
-    {
-      id: "UG9rZW1vbjowMDc=",
-      number: "007",
-      name: "Squirtle",
-      types: ["Water"],
-      image: "https://img.pokemondb.net/artwork/squirtle.jpg",
-      evolutions: [{ id: "UG9rZW1vbjowMDg=", name: "Wartortle" }]
-    },
-    {
-      id: "UG9rZW1vbjowMjU=",
-      number: "025",
-      name: "Pikachu",
-      types: ["Electric"],
-      image: "https://img.pokemondb.net/artwork/pikachu.jpg",
-      evolutions: [{ id: "UG9rZW1vbjowMjY=", name: "Raichu" }]
-    },
-    {
-      id: "UG9rZW1vbjowMzM=",
-      number: "033",
-      name: "Nidorino",
-      types: ["Poison"],
-      image: "https://img.pokemondb.net/artwork/nidorino.jpg",
-      evolutions: [{ id: "UG9rZW1vbjowMzQ=", name: "Nidoking" }]
-    },
-    {
-      id: "UG9rZW1vbjowMzk=",
-      number: "039",
-      name: "Jigglypuff",
-      types: ["Normal", "Fairy"],
-      image: "https://img.pokemondb.net/artwork/jigglypuff.jpg",
-      evolutions: [{ id: "UG9rZW1vbjowNDA=", name: "Wigglytuff" }]
-    }
-  ];
 
   // Client-side caching implementation
   useEffect(() => {
@@ -97,12 +43,14 @@ export default function Home() {
       }
     } catch (e) {
       // If localStorage access fails, skip silently
+      console.error('Failed to access localStorage:', e);
     }
   }, []);
 
   // Fetch Pokémon names only when needed
   const { data: allPokemonsData } = useQuery<{ pokemons: { name: string }[] }>(GET_POKEMONS, {
     variables: { first: 200 },
+    skip: !shouldFetchNames,
   });
 
   // Persist fetched names to localStorage
@@ -113,6 +61,7 @@ export default function Home() {
       localStorage.setItem('pokemonNames', JSON.stringify(names));
     } catch (e) {
       // Fail silently to avoid impacting UI
+      console.error('Failed to persist Pokémon names to localStorage:', e);
     } finally {
       setShouldFetchNames(false);
     }
@@ -126,7 +75,6 @@ export default function Home() {
       // The recentSearches now contains complete Pokemon objects, no need to transform
       const recentPokemonData = recentSearches;
       
-      setTotalItems(recentPokemonData.length);
       setTotalPages(Math.ceil(recentPokemonData.length / ITEMS_PER_PAGE));
       
       // Get current page of pokemon
@@ -148,12 +96,12 @@ export default function Home() {
             <Image 
               src="/pokemon-logo.png" 
               alt="Pokemon Logo" 
-              width={300} 
+              width={250} 
               height={110} 
               priority
             />
           </div>
-          <p className="text-gray-500 bold text-md sm:text-xl mb-12">
+          <p className="text-gray-500 bold text-md sm:text-lg mb-12">
             Search for any Pokémon to view detailed information
           </p>
           <SearchInput onSearch={handleSearch} initialValue={searchQuery} placeholder="Search for a Pokémon..." />
@@ -174,7 +122,6 @@ export default function Home() {
                       onClick={() => {
                         localStorage.removeItem('recentSearches');
                         setRecentSearchPokemons([]);
-                        setTotalItems(0);
                         setTotalPages(1);
                       }}
                       className="px-1 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm cursor-pointer"
@@ -205,5 +152,36 @@ export default function Home() {
         </div>
       </div>
     </main>
+  );
+}
+
+function LoadingFallback() {
+  return (
+    <main className="min-h-screen p-2 md:p-8 bg-white sm:bg-transparent">
+      <div className="max-w-4xl mx-auto bg-white p-2 rounded-xl sm:p-7 sm:rounded-2xl sm:shadow-sm sm:shadow-amber-200">
+        <div className="text-center mb-4">
+          <div className="flex justify-center mb-4">
+            <Image 
+              src="/pokemon-logo.png" 
+              alt="Pokemon Logo" 
+              width={250} 
+              height={110} 
+              priority
+            />
+          </div>
+          <p className="text-gray-500 bold text-md sm:text-lg mb-12">
+            Loading...
+          </p>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <HomeContent />
+    </Suspense>
   );
 }

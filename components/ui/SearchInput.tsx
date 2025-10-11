@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, FormEvent, useRef } from 'react';
 import { SearchInputProps } from '../../lib/interfaces/ui';
-import { getSuggestions, savePokemonName } from '../../lib/pokemonSearchUtils';
+import { getSuggestions } from '../../lib/pokemonSearchUtils';
 
 export function SearchInput({
   onSearch,
