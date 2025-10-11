@@ -1,103 +1,176 @@
-import Image from "next/image";
+'use client';
+
+import { useSearchParams } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useQuery } from '@apollo/client/react';
+import Image from 'next/image';
+import { SearchInput } from '@/components/ui/SearchInput';
+import PokemonResult from '@/components/pokemon-result';
+import PokemonGrid from '@/components/pokemon-grid';
+import PokemonNotFound from '@/components/not-found';
+import Pagination from '@/components/pagination';
+import { Pokemon } from '@/lib/types';
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const searchParams = useSearchParams();
+  const searchQuery = searchParams.get('search') || '';
+  
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 6;
+  const [recentSearchPokemons, setRecentSearchPokemons] = useState<Pokemon[]>([]);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  // Mock data for the grid since the API might be having issues
+  const mockPokemons = [
+    {
+      id: "UG9rZW1vbjowMDE=",
+      number: "001",
+      name: "Bulbasaur",
+      types: ["Grass", "Poison"],
+      image: "https://img.pokemondb.net/artwork/bulbasaur.jpg",
+      evolutions: [{ id: "UG9rZW1vbjowMDI=", name: "Ivysaur" }]
+    },
+    {
+      id: "UG9rZW1vbjowMDQ=",
+      number: "004",
+      name: "Charmander",
+      types: ["Fire"],
+      image: "https://img.pokemondb.net/artwork/charmander.jpg",
+      evolutions: [{ id: "UG9rZW1vbjowMDU=", name: "Charmeleon" }]
+    },
+    {
+      id: "UG9rZW1vbjowMDc=",
+      number: "007",
+      name: "Squirtle",
+      types: ["Water"],
+      image: "https://img.pokemondb.net/artwork/squirtle.jpg",
+      evolutions: [{ id: "UG9rZW1vbjowMDg=", name: "Wartortle" }]
+    },
+    {
+      id: "UG9rZW1vbjowMjU=",
+      number: "025",
+      name: "Pikachu",
+      types: ["Electric"],
+      image: "https://img.pokemondb.net/artwork/pikachu.jpg",
+      evolutions: [{ id: "UG9rZW1vbjowMjY=", name: "Raichu" }]
+    },
+    {
+      id: "UG9rZW1vbjowMzM=",
+      number: "033",
+      name: "Nidorino",
+      types: ["Poison"],
+      image: "https://img.pokemondb.net/artwork/nidorino.jpg",
+      evolutions: [{ id: "UG9rZW1vbjowMzQ=", name: "Nidoking" }]
+    },
+    {
+      id: "UG9rZW1vbjowMzk=",
+      number: "039",
+      name: "Jigglypuff",
+      types: ["Normal", "Fairy"],
+      image: "https://img.pokemondb.net/artwork/jigglypuff.jpg",
+      evolutions: [{ id: "UG9rZW1vbjowNDA=", name: "Wigglytuff" }]
+    }
+  ];
+
+  // Client-side caching implementation
+  useEffect(() => {
+    if (searchQuery) {
+      // We'll update the localStorage only when we have found Pokemon data
+      // This will be handled in the PokemonResult component
+    }
+  }, [searchQuery]);
+
+  // Load recent searches from localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !searchQuery) {
+      const recentSearches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
+      
+      // The recentSearches now contains complete Pokemon objects, no need to transform
+      const recentPokemonData = recentSearches;
+      
+      setTotalItems(recentPokemonData.length);
+      setTotalPages(Math.ceil(recentPokemonData.length / ITEMS_PER_PAGE));
+      
+      // Get current page of pokemon
+      const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+      const endIndex = startIndex + ITEMS_PER_PAGE;
+      setRecentSearchPokemons(recentPokemonData.slice(startIndex, endIndex));
+    }
+  }, [currentPage, searchQuery]);
+
+  const handleSearch = (query: string) => {
+    window.location.href = `/?search=${encodeURIComponent(query)}`;
+  };
+
+  return (
+    <main className="min-h-screen p-4 md:p-8 bg-transparent">
+      <div className="max-w-4xl mx-auto">
+        <div className="text-center mb-4">
+          <div className="flex justify-center mb-4">
+            <Image 
+              src="/pokemon-logo.png" 
+              alt="Pokemon Logo" 
+              width={300} 
+              height={110} 
+              priority
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+          </div>
+          <p className="text-gray-700 bold text-xl mb-12">
+            Search for any Pokémon to view detailed information
+          </p>
+          <SearchInput onSearch={handleSearch} initialValue={searchQuery} placeholder="Search for a Pokémon..." />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+
+        {searchQuery ? (
+          <div className="mt-8">
+            <PokemonResult pokemonName={searchQuery} />
+          </div>
+        ) : (
+          <>
+            {recentSearchPokemons.length > 0 ? (
+              <>
+                <div className="mt-8">
+                  <div className="flex gap-1.5 items-center mb-4">
+                    <h2 className="text-xl font-semibold">Your Recent Searches</h2>
+                    <button 
+                      onClick={() => {
+                        localStorage.removeItem('recentSearches');
+                        setRecentSearchPokemons([]);
+                        setTotalItems(0);
+                        setTotalPages(1);
+                      }}
+                      className="px-1 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm cursor-pointer"
+                    >
+                      <Image
+                        src="/game-icon/bin.svg"
+                        alt="Clear Recent Icon"
+                        width={30}
+                        height={30}
+                      />
+                    </button>
+                  </div>
+                  <PokemonGrid pokemons={recentSearchPokemons as Pokemon[]} />
+                </div>
+                {totalPages > 1 && (
+                  <Pagination 
+                    currentPage={currentPage} 
+                    totalPages={totalPages} 
+                    onPageChange={handlePageChange} 
+                  />
+                )}
+              </>
+            ) : null}
+          </>
+        )}
+        <div className="fixed bottom-5 right-5 text-sm text-gray-600">
+          Developed by Aung Thura
+        </div>
+      </div>
+    </main>
   );
 }
