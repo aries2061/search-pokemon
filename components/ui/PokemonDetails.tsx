@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { PokemonDataProps } from '@/lib/interfaces/ui';
 import { Pokemon, Attack } from '@/lib/types';
 import ImageWithFallback from '@/components/ui/ImageWithFallback';
 
 export function PokemonDetails({ pokemon, onEvolutionClick, onBackClick }: PokemonDataProps) {
-  const [backgroundColor, setBackgroundColor] = useState<string>('rgba(200, 200, 200, 0.1)');
+  const backgroundColor = 'rgba(200, 200, 200, 0.1)';
   console.log("Pokemon Data:", pokemon)
   return (
     <div className="rounded-lg shadow-lg overflow-hidden" style={{ 'backgroundColor': backgroundColor }}>
