@@ -17,3 +17,9 @@ export interface PokemonGridProps {
 export interface PokemonResultProps {
   pokemonName: string;
 }
+
+export interface PokemonDataProps {
+  pokemon: Pokemon;
+  onEvolutionClick: (name: string) => void;
+  onBackClick: () => void;
+}

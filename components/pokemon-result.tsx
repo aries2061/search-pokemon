@@ -10,7 +10,7 @@ import { ArrowLeft } from 'lucide-react';
 import PokemonNotFound from '@/components/not-found';
 import { downloadAndCompressImage, useOnlineStatus } from '@/lib/utils';
 
-import { PokemonResultProps } from '@/lib/interfaces/components';
+import { PokemonResultProps, PokemonDataProps } from '@/lib/interfaces/components';
 import { Pokemon, Attack } from '@/lib/types';
 
 // Loading component for Suspense fallback
@@ -23,13 +23,6 @@ function PokemonLoading() {
       <p className="text-gray-500 mt-4">Loading Pokémon data...</p>
     </div>
   );
-}
-
-// Pokemon data component that will be wrapped with Suspense
-interface PokemonDataProps {
-  pokemon: Pokemon;
-  onEvolutionClick: (name: string) => void;
-  onBackClick: () => void;
 }
 
 function PokemonData({ pokemon, onEvolutionClick, onBackClick }: PokemonDataProps) {
