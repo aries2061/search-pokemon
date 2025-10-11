@@ -10,6 +10,7 @@ import PokemonGrid from '@/components/pokemon-grid';
 import Pagination from '@/components/pagination';
 import { Pokemon } from '@/lib/types';
 import { GET_POKEMONS } from '@/lib/graphql/queries';
+import Link from 'next/link';
 
 function HomeContent() {
   const searchParams = useSearchParams();
@@ -153,10 +154,12 @@ function HomeContent() {
             ) : null}
           </>
         )}
-        <div className="fixed bottom-5 right-5 text-sm text-gray-600">
-          Developed by Aung Thura
-        </div>
       </div>
+        <div className="text-sm text-gray-800 text-end">
+          <Link href="https://www.linkedin.com/in/aung-thura-atr/" target="_blank" className='cursor-pointer hover:underline'>
+            Developed by Aung Thura
+          </Link>
+        </div>
     </main>
   );
 }

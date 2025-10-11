@@ -4,29 +4,11 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { PokemonDataProps } from '@/lib/interfaces/ui';
 import { Pokemon, Attack } from '@/lib/types';
-import { getDominantColor } from '@/lib/utils';
 import ImageWithFallback from '@/components/ui/ImageWithFallback';
 
 export function PokemonDetails({ pokemon, onEvolutionClick, onBackClick }: PokemonDataProps) {
   const [backgroundColor, setBackgroundColor] = useState<string>('rgba(200, 200, 200, 0.1)');
-  
-  useEffect(() => {
-    const extractColor = async () => {
-      if (pokemon.image) {
-        try {
-          const dominantColor = await getDominantColor(pokemon.image, 0.1);
-          console.log("Dominant Color: ", dominantColor);
-          setBackgroundColor(dominantColor);
-        } catch (error) {
-          console.error('Failed to extract dominant color:', error);
-          setBackgroundColor('rgba(200, 200, 200, 0.1)');
-        }
-      }
-    };
-
-    extractColor();
-  }, [pokemon.image]);
-
+  console.log("Pokemon Data:", pokemon)
   return (
     <div className="rounded-lg shadow-lg overflow-hidden" style={{ 'backgroundColor': backgroundColor }}>
       <div className="p-3 sm:p-6">
@@ -40,58 +22,77 @@ export function PokemonDetails({ pokemon, onEvolutionClick, onBackClick }: Pokem
         </button>
 
         {/* Pokémon Details */}
-        <div className="flex flex-col md:flex-row items-center border-1 border-gray-500 sm:border-0 rounded-lg p-3">
-          <div className="relative w-35 h-35 mb-2 md:mb-0 md:mr-6">
-            <ImageWithFallback
-              src={pokemon.image || '/icon.svg'}
-              alt={pokemon.name}
-              fill
-              className="object-contain"
-              priority={true}
-              loading="eager"
-            />
+        <div className="flex flex-col md:flex-row gap-4 rounded-lg">
+          {/* First Column: Pokemon Image with white background - Equal width on desktop */}
+          <div className="w-full md:w-1/2 bg-white flex items-center justify-center">
+            <div className="relative w-40 h-40 md:w-56 md:h-56">
+              <ImageWithFallback
+                src={pokemon.image || '/icon.svg'}
+                alt={pokemon.name}
+                fill
+                className="object-contain"
+                priority={true}
+                loading="eager"
+              />
+            </div>
           </div>
-          <div className="flex-1">
+
+          {/* Second Column: Pokemon Info with dark background - Equal width on desktop */}
+          <div className="w-full md:w-1/2 bg-gray-800 rounded-lg p-4 text-white flex flex-col gap-4">
+            {/* Row 1: Pokemon Name and Number */}
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-2xl font-bold">
-                {pokemon.name} <span className="text-gray-100 text-xs p-1 rounded bg-blue-600">{pokemon.classification}</span>
+              <h2 className="flex items-center justify-center text-2xl md:text-3xl font-bold text-white">
+                <span>{pokemon.name}</span> 
+                <span className="border border-white rounded-md text-white text-xs ml-2 p-1 font-normal"> {pokemon.classification} </span>
               </h2>
-              <span className="text-gray-500">#{pokemon.number}</span>
+              <span className="text-gray-300 text-lg">#{pokemon.number}</span>
             </div>
-            <div className="flex flex-wrap gap-2 mb-3">
-              {pokemon.types.map((type: string) => (
-                <span
-                  key={type}
-                  className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
-                >
-                  {type}
-                </span>
-              ))}
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <p className="text-sm text-gray-500">Height : 
-                    <span className="text-gray-800 ml-2 text-xs lg:text-lg">
-                      {pokemon.height.minimum} - {pokemon.height.maximum} 
-                    </span>
-                </p>
-                <p className="text-sm text-gray-500">Weight : 
-                  <span className="text-gray-800 ml-2 text-xs lg:text-lg">
-                    {pokemon.weight.minimum} - {pokemon.weight.maximum}
+
+            {/* Row 2: Types and Abilities */}
+            <div className='mb-2'>
+              <div className="flex flex-wrap gap-2">
+                {pokemon.types.map((type: string) => (
+                  <span
+                    key={type}
+                    className="px-3 py-1 bg-amber-600 text-white font-bold rounded-full text-sm flex items-center gap-1"
+                  >
+                    <div className="w-3 h-3 bg-yellow-300 rounded-full"></div>
+                    {type}
                   </span>
-                </p>
+                ))}
               </div>
-              <div>
-                <p className="text-sm text-gray-500">Max HP : 
-                  <span className="text-gray-800 ml-2 text-xs lg:text-lg">
-                    {pokemon.maxHP}
-                  </span>
-                </p>
-                <p className="text-sm text-gray-500">Max CP : 
-                  <span className="text-gray-800 ml-2 text-xs lg:text-lg">
-                    {pokemon.maxCP}
-                  </span>
-                </p>
+            </div>
+
+            {/* Row 3: Stats Grid with white background - 2 rows, 3 columns */}
+            <div className="bg-white rounded-lg p-4 flex-1">
+              <h3 className="text-lg font-semibold text-gray-800 mb-3">Stats</h3>
+              <div className="grid grid-cols-2 gap-3 h-auto">
+                {/* First Row */}
+                {/* HP */}
+                <div className="text-center flex flex-col justify-center">
+                  <div className="text-lg md:text-xl font-bold text-gray-800">Height</div>
+                  <div className="text-sm md:text-md text-gray-800">{pokemon.height.minimum}-{pokemon.height.maximum}</div>
+                </div>
+
+                {/* Attack (using maxCP as attack stat) */}
+                <div className="text-center flex flex-col justify-center">
+                  <div className="text-lg md:text-xl font-bold text-gray-800">Weight</div>
+                  <div className="text-sm md:text-md text-gray-800">{pokemon.weight.minimum}-{pokemon.weight.maximum}</div>
+                </div>
+
+                {/* Second Row */}
+                {/* Special Attack (calculated) */}
+                <div className="text-center flex flex-col justify-center">
+                  <div className="text-lg md:text-xl font-bold text-gray-800">Max HP</div>
+                  <div className="text-sm md:text-md text-gray-800">{pokemon.maxHP}</div>
+                </div>
+
+                {/* Special Defense (calculated) */}
+                <div className="text-center flex flex-col justify-center">
+                  <div className="text-lg md:text-xl font-bold text-gray-800">Max CP</div>
+                  <div className="text-sm md:text-md text-gray-800">{pokemon.maxCP}</div>
+                </div>
+
               </div>
             </div>
           </div>
@@ -102,97 +103,145 @@ export function PokemonDetails({ pokemon, onEvolutionClick, onBackClick }: Pokem
           <hr className="w-[100%] sm:w-[75%] border-gray-300" />
         </div>
         
-        {/* Pokémon Details - 3 Column Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Column 1: Attacks */}
+        {/* Pokémon Details -  Column Layout */}
+        <div className="flex flex-col md:grid md:grid-cols-2 gap-4">
+          
+          {/* Column 1: Attacks - Full width on mobile, first column on desktop */}
           {pokemon.attacks && (
-            <div className="col-span-1 flex flex-col items-start border-1 border-gray-300 rounded-lg p-1 pl-2">
-              <h3 className="text-lg font-semibold mb-3 flex items-center">
+            <div className="w-full md:col-span-1 flex flex-col items-start border-1 border-white bg-white rounded-md p-3 md:p-1 md:pl-2">
+              <h3 className="flex items-center justify-center text-lg md:text-xl font-bold text-gray-800 p-1 mb-3">
                 <ImageWithFallback src="/game-icon/sword.svg" width={24} height={24} alt="Sword icon" className="mr-1" priority={false} loading="lazy" /> 
                 <span>Attacks</span>
               </h3>
-              <div className="grid grid-cols-2 gap-2 w-full pl-2">
-                {/* Fast Attacks */}
-                <div className="flex flex-col items-start">
-                  <h4 className="text-sm font-medium mb-1">Fast</h4>
-                  <div className="space-y-1 w-full">
-                    {pokemon.attacks.fast.map((attack: Attack) => (
-                      <div
-                        key={attack.name}
-                        className="flex justify-between items-start p-1 rounded text-xs"
-                      >
-                        <div className="truncate mr-1">
-                          <span className="font-medium">{attack.name}</span>
-                          <span className="ml-1 text-xs text-gray-800">
-                            {attack.type}
-                          </span>
-                          <span className="bg-red-600 text-white font-bold ml-3 px-1 py-0.5 rounded-md text-xs whitespace-nowrap">{attack.damage}</span>
-                        </div>
-                      </div>
-                    ))}
+              <div className="flex flex-col gap-6 w-full">
+                {/* Fast Attacks Table */}
+                <div className="w-full">
+                  <div className="flex items-center mb-3">
+                    <span className="px-3 py-1 bg-red-400 text-white rounded-md text-sm font-medium">
+                      Fast Attacks
+                    </span>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-collapse bg-white rounded-lg shadow-sm">
+                      <thead>
+                        <tr className="bg-gray-100">
+                          <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
+                            Attack Name
+                          </th>
+                          <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
+                            Attack Type
+                          </th>
+                          <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
+                            Damage
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {pokemon.attacks.fast.map((attack: Attack, index: number) => (
+                          <tr key={attack.name} className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                            <td className="px-4 py-2 text-sm font-medium text-gray-900">
+                              {attack.name}
+                            </td>
+                            <td className="px-4 py-2 text-sm text-gray-700">
+                              {attack.type}
+                            </td>
+                            <td className="px-4 py-2 text-sm">
+                              <span className="bg-red-600 text-white font-bold px-2 py-1 rounded-md text-xs">
+                                {attack.damage}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
-                {/* Special Attacks */}
-                <div className="flex flex-col items-start">
-                  <h4 className="text-sm font-medium mb-1">Special</h4>
-                  <div className="space-y-1 w-full">
-                    {pokemon.attacks.special.map((attack: Attack) => (
-                      <div
-                        key={attack.name}
-                        className="flex justify-between items-center p-1 rounded text-xs"
-                      >
-                        <div className="truncate mr-1">
-                          <span className="font-medium">{attack.name}</span>
-                          <span className="ml-1 text-xs text-gray-500">
-                            {attack.type}
-                          </span>
-                        <span className="bg-red-600 text-white font-bold ml-2 px-1 py-0.5 rounded-md text-xs whitespace-nowrap">{attack.damage}</span>
-                        </div>
-                      </div>
-                    ))}
+
+                {/* Special Attacks Table */}
+                <div className="w-full">
+                  <div className="flex items-center mb-3">
+                    <span className="px-3 py-1 bg-blue-400 text-white rounded-md text-sm font-medium">
+                      Special Attacks
+                    </span>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-collapse bg-white rounded-lg shadow-sm">
+                      <thead>
+                        <tr className="bg-gray-100">
+                          <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
+                            Attack Name
+                          </th>
+                          <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
+                            Attack Type
+                          </th>
+                          <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
+                            Damage
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {pokemon.attacks.special.map((attack: Attack, index: number) => (
+                          <tr key={attack.name} className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                            <td className="px-4 py-2 text-sm font-medium text-gray-900">
+                              {attack.name}
+                            </td>
+                            <td className="px-4 py-2 text-sm text-gray-700">
+                              {attack.type}
+                            </td>
+                            <td className="px-4 py-2 text-sm">
+                              <span className="bg-red-600 text-white font-bold px-2 py-1 rounded-md text-xs">
+                                {attack.damage}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Column 2: Resistances */}
+          {/* Column 2: Resistances - Full width on mobile, second column on desktop */}
           {pokemon.resistant && (
-            <div className="col-span-1 flex flex-col items-center border-1 border-gray-300 rounded-lg p-1">
-              <h3 className="text-lg font-semibold mb-3 flex items-center">
+            <div className="w-full flex flex-col items-start border-1 border-white bg-white rounded-md p-5 md:p-1">
+              <h3 className="flex items-center justify-center text-lg md:text-xl font-bold p-1 text-gray-800 mb-3">
                 <ImageWithFallback src="/game-icon/shield.svg" width={24} height={24} alt="Shield icon" className="mr-1" priority={false} loading="lazy" /> 
                 <span>Resistances</span>
               </h3>
-              <div className="grid grid-cols-2 gap-2 w-full">
+              <div className="grid w-full">
                 {pokemon.resistant.map((type: string) => (
                   <div
                     key={type}
-                    className="flex justify-center items-center p-1 bg-green-50 rounded text-xs"
+                    className="flex items-start bg-green-50 rounded text-sm md:text-md mb-1 py-2"
                   >
-                    <span className="font-medium text-green-700">{type}</span>
+                    <span className="font-medium text-green-700 text-bold ml-2">{type}</span>
                   </div>
                 ))}
-              </div>
-            </div>
-          )}
 
-          {/* Column 3: Weaknesses */}
-          {pokemon.weaknesses && (
-            <div className="col-span-3 flex flex-col items-start">
-              <h3 className="text-lg font-semibold mb-3 flex items-center justify-start">
-                <ImageWithFallback src="/game-icon/weak.svg" width={24} height={24} alt="Weakness icon" className="mr-1" priority={false} loading="lazy" /> 
-                <span>Weaknesses</span>
-                {
-                pokemon.weaknesses.map((type: string) => (
-                    <div
-                      key={type}
-                      className="flex justify-center items-center p-1 bg-red-50 rounded text-xs ml-2"
-                    >
-                      <span className="font-medium text-red-700">{type}</span>
+                {/* Column 3: Weaknesses */}
+                {pokemon.weaknesses && (
+                  <div className="w-full flex flex-col items-start border-1 border-white bg-white rounded-md mt-3 md:p-1">
+                    <h3 className="flex items-center justify-center text-lg md:text-xl font-bold text-gray-800 p-1 mb-3">   
+                      <ImageWithFallback src="/game-icon/weak.svg" width={24} height={24} alt="Weakness icon" className="mr-1" priority={false} loading="lazy" /> 
+                      <span>Weaknesses</span>
+                    </h3>
+                    <div className="grid w-full">
+                      {
+                      pokemon.weaknesses.map((type: string) => (
+                          <div
+                            key={type}
+                            className="flex items-start bg-purple-50 rounded text-sm md:text-md mb-1 py-2"
+                          >
+                            <span className="font-medium text-gray-700 text-bold ml-2">{type}</span>
+                          </div>
+                        ))
+                      }
                     </div>
-                  ))
-                }
-              </h3>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
