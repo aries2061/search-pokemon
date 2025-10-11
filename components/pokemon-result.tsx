@@ -195,9 +195,21 @@ function PokemonData({ pokemon, onEvolutionClick, onBackClick }: any) {
           )}
         </div>
 
+        {/* Evolution Requirements Section */}
+        {pokemon.evolutionRequirements && (
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold mb-2">Evolution Requirements</h3>
+            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-sm">
+                <span className="font-medium">Requires:</span> {pokemon.evolutionRequirements.amount} {pokemon.evolutionRequirements.name}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Evolutions Section */}
         {pokemon.evolutions && pokemon.evolutions.length > 0 && (
-          <div className="mt-8">
+          <div className="mt-6">
             <h3 className="text-lg font-semibold mb-4">Evolutions</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {pokemon.evolutions.map((evolution: any) => (

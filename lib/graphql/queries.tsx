@@ -34,6 +34,10 @@ export const GET_POKEMON = gql`
           damage
         }
       }
+      evolutionRequirements {
+        amount
+        name
+      }
       evolutions {
         id
         number

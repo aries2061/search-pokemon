@@ -1,3 +1,8 @@
+export interface PokemonEvolutionRequirement {
+  amount: number;
+  name: string;
+}
+
 export interface Pokemon {
   id: string;
   number: string;
@@ -24,6 +29,7 @@ export interface Pokemon {
     special: Attack[];
   };
   evolutions?: Pokemon[];
+  evolutionRequirements?: PokemonEvolutionRequirement;
 }
 
 export interface Attack {
