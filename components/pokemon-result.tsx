@@ -9,7 +9,6 @@ import Image from 'next/image';
 import { ArrowLeft } from 'lucide-react';
 import PokemonNotFound from '@/components/not-found';
 import { downloadAndCompressImage, useOnlineStatus } from '@/lib/utils';
-import { savePokemonName } from '@/lib/pokemonSearchUtils';
 
 import { PokemonResultProps } from '@/lib/interfaces/components';
 
@@ -293,15 +292,10 @@ export default function PokemonResult({ pokemonName }: PokemonResultProps) {
             // Download and compress the image to 40% of original size
             const compressedImageData = await downloadAndCompressImage(pokemon.image, pokemon.name);
             
-            // Create a simplified Pokemon object to store
+            // Store full Pokémon data including downloaded image data
             const pokemonToStore = {
-              id: pokemon.id,
-              number: pokemon.number,
-              name: pokemon.name,
-              types: pokemon.types,
-              image: pokemon.image,
-              compressedImage: compressedImageData, // Store the compressed image data
-              evolutions: pokemon.evolutions ? pokemon.evolutions.map(e => ({ id: e.id, name: e.name })) : []
+              ...pokemon,
+              compressedImage: compressedImageData
             };
             
             // Check if this Pokemon is already in recent searches
@@ -324,15 +318,8 @@ export default function PokemonResult({ pokemonName }: PokemonResultProps) {
           } catch (error) {
             console.error("Error storing compressed image:", error);
             
-            // Fallback to storing without compressed image
-            const pokemonToStore = {
-              id: pokemon.id,
-              number: pokemon.number,
-              name: pokemon.name,
-              types: pokemon.types,
-              image: pokemon.image,
-              evolutions: pokemon.evolutions ? pokemon.evolutions.map(e => ({ id: e.id, name: e.name })) : []
-            };
+            // Fallback to storing full data without compressed image
+            const pokemonToStore = { ...pokemon };
             
             const existingIndex = recentSearches.findIndex((p: any) => p.id === pokemon.id);
             if (existingIndex !== -1) {
@@ -395,11 +382,6 @@ export default function PokemonResult({ pokemonName }: PokemonResultProps) {
 
   // If we're online and have data from GraphQL
   const pokemon = isOnline ? data?.pokemon : localPokemon;
-  
-  // Save the Pokémon name to localStorage only when we have a valid result
-  if (pokemon && pokemon.name) {
-    savePokemonName(pokemon.name);
-  }
   
   const handleBackClick = () => {
     router.replace('/');

@@ -10,6 +10,7 @@ import PokemonGrid from '@/components/pokemon-grid';
 import PokemonNotFound from '@/components/not-found';
 import Pagination from '@/components/pagination';
 import { Pokemon } from '@/lib/types';
+import { GET_POKEMONS } from '@/lib/graphql/queries';
 
 export default function Home() {
   const searchParams = useSearchParams();
@@ -20,6 +21,7 @@ export default function Home() {
   const [recentSearchPokemons, setRecentSearchPokemons] = useState<Pokemon[]>([]);
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
+  const [shouldFetchNames, setShouldFetchNames] = useState(false);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -85,6 +87,37 @@ export default function Home() {
     }
   }, [searchQuery]);
 
+  // On first load, populate localStorage with all Pokémon names if missing
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const existing = localStorage.getItem('pokemonNames');
+      if (!existing) {
+        setShouldFetchNames(true);
+      }
+    } catch (e) {
+      // If localStorage access fails, skip silently
+    }
+  }, []);
+
+  // Fetch Pokémon names only when needed
+  const { data: allPokemonsData } = useQuery<{ pokemons: { name: string }[] }>(GET_POKEMONS, {
+    variables: { first: 200 },
+  });
+
+  // Persist fetched names to localStorage
+  useEffect(() => {
+    if (!allPokemonsData?.pokemons || typeof window === 'undefined') return;
+    try {
+      const names = allPokemonsData.pokemons.map((p) => p.name);
+      localStorage.setItem('pokemonNames', JSON.stringify(names));
+    } catch (e) {
+      // Fail silently to avoid impacting UI
+    } finally {
+      setShouldFetchNames(false);
+    }
+  }, [allPokemonsData]);
+
   // Load recent searches from localStorage
   useEffect(() => {
     if (typeof window !== 'undefined' && !searchQuery) {
@@ -108,8 +141,8 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen p-4 md:p-8 bg-transparent">
-      <div className="max-w-4xl mx-auto">
+    <main className="min-h-screen p-2 md:p-8 bg-white sm:bg-transparent">
+      <div className="max-w-4xl mx-auto bg-white p-2 rounded-xl sm:p-7 sm:rounded-2xl sm:shadow-sm sm:shadow-amber-200">
         <div className="text-center mb-4">
           <div className="flex justify-center mb-4">
             <Image 
@@ -120,7 +153,7 @@ export default function Home() {
               priority
             />
           </div>
-          <p className="text-gray-700 bold text-xl mb-12">
+          <p className="text-gray-500 bold text-md sm:text-xl mb-12">
             Search for any Pokémon to view detailed information
           </p>
           <SearchInput onSearch={handleSearch} initialValue={searchQuery} placeholder="Search for a Pokémon..." />
