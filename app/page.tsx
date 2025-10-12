@@ -189,6 +189,7 @@ function HomeContent() {
                     onPageChange={handlePageChange} 
                   />
                 )}
+                <p className="text-sm text-gray-600 text-center my-3"> Showing 16 Pokémon per page</p>
               </>
             )}
           </>
