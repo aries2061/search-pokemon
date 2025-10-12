@@ -41,6 +41,8 @@ export interface SearchInputProps {
   initialValue?: string;
   placeholder?: string;
   className?: string;
+  value?: string;
+  onChange?: (value: string) => void;
 }
 
 export interface PokemonDetailsProps {

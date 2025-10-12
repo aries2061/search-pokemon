@@ -3,27 +3,25 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { Providers } from "./providers";
 import "../public/fonts/fonts.css";
+import ErrorBoundary from "@/components/ui/ErrorBoundary";
 
 const geistSans = localFont({
   src: [
-    { path: '../public/fonts/geist/light.ttf', weight: '300' },
     { path: '../public/fonts/geist/regular.ttf', weight: '400' },
-    { path: '../public/fonts/geist/medium.ttf', weight: '500' },
     { path: '../public/fonts/geist/semibold.ttf', weight: '600' },
-    { path: '../public/fonts/geist/bold.ttf', weight: '700' },
   ],
   variable: "--font-geist-sans",
+  display: 'swap',
+  preload: true,
 });
 
 const geistMono = localFont({
   src: [
-    { path: '../public/fonts/geist-mono/light.ttf', weight: '300' },
     { path: '../public/fonts/geist-mono/regular.ttf', weight: '400' },
-    { path: '../public/fonts/geist-mono/medium.ttf', weight: '500' },
-    { path: '../public/fonts/geist-mono/semibold.ttf', weight: '600' },
-    { path: '../public/fonts/geist-mono/bold.ttf', weight: '700' },
   ],
   variable: "--font-geist-mono",
+  display: 'swap',
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -41,10 +39,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="preload" href="/pokemon-logo.png" as="image" />
+        <link rel="preload" href="/bg.webp" as="image" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         style={{
-          backgroundImage: "url('/bg.jpg')",
+          backgroundImage: "url('/bg.webp')",
           backgroundRepeat: "no-repeat",
           backgroundSize: "cover",
           backgroundPosition: "center",
@@ -52,7 +54,9 @@ export default function RootLayout({
         }}
         suppressHydrationWarning={true}
       >
-        <Providers>{children}</Providers>
+        <ErrorBoundary>
+          <Providers>{children}</Providers>
+        </ErrorBoundary>
       </body>
     </html>
   );

@@ -1,30 +1,23 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { useQuery } from '@apollo/client/react';
-import { useEffect, Suspense, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { GET_POKEMON } from '@/lib/graphql/queries';
 import { PokemonQueryResponse } from '@/lib/types';
 import PokemonNotFound from '@/components/not-found';
 import { downloadAndCompressImage, useOnlineStatus } from '@/lib/utils';
-import { PokemonDetails } from '@/components/ui/PokemonDetails';
 
 import { PokemonResultProps } from '@/lib/interfaces/components';
 import { Pokemon } from '@/lib/types';
 
-// Loading component for Suspense fallback
-function PokemonLoading() {
-  return (
-    <div className="text-center p-8 animate-pulse">
-      <div className="h-48 w-48 bg-gray-200 rounded-lg mx-auto mb-4"></div>
-      <div className="h-6 bg-gray-200 rounded w-1/2 mx-auto mb-2"></div>
-      <div className="h-4 bg-gray-200 rounded w-1/3 mx-auto"></div>
-      <p className="text-gray-500 mt-4">Loading Pokémon data...</p>
-    </div>
-  );
-}
+// Lazy load the PokemonDetails component for code splitting
+const PokemonDetails = lazy(() => import('@/components/ui/PokemonDetails').then(module => ({ default: module.PokemonDetails })));
 
-export default function PokemonResult({ pokemonName }: PokemonResultProps) {
+// Import the skeleton component
+import { PokemonDetailsSkeleton } from '@/components/ui/PokemonDetailsSkeleton';
+
+export default function PokemonResult({ pokemonName, onPokemonClick, onBackClick }: PokemonResultProps) {
   const router = useRouter();
   const isOnline = useOnlineStatus();
   const [localPokemon, setLocalPokemon] = useState<Pokemon | null>(null);
@@ -43,7 +36,11 @@ export default function PokemonResult({ pokemonName }: PokemonResultProps) {
   const error = isOnline ? graphqlError : (!localPokemon && !isLocalLoading);
 
   const handleEvolutionClick = (name: string) => {
-    router.replace(`/?search=${encodeURIComponent(name)}`);
+    if (onPokemonClick) {
+      onPokemonClick(name);
+    } else {
+      router.replace(`/?search=${encodeURIComponent(name)}`);
+    }
   };
   
   // Set mounted state after component mounts
@@ -140,21 +137,21 @@ export default function PokemonResult({ pokemonName }: PokemonResultProps) {
 
   // Use Suspense for loading state
   if (loading) {
-    return (
-      <Suspense fallback={<PokemonLoading />}>
-        <PokemonLoading />
-      </Suspense>
-    );
+    return <PokemonDetailsSkeleton />;
   }
 
   // If we're offline and have local data, use that
   if (!isOnline && localPokemon) {
     const handleBackClick = () => {
-      router.replace('/');
+      if (onBackClick) {
+        onBackClick();
+      } else {
+        router.replace('/');
+      }
     };
     
     return (
-      <Suspense fallback={<PokemonLoading />}>
+      <Suspense fallback={<PokemonDetailsSkeleton />}>
         <PokemonDetails 
           pokemon={localPokemon} 
           onEvolutionClick={handleEvolutionClick}
@@ -176,12 +173,16 @@ export default function PokemonResult({ pokemonName }: PokemonResultProps) {
   const pokemon = isOnline ? data?.pokemon : localPokemon;
   
   const handleBackClick = () => {
-    router.replace('/');
+    if (onBackClick) {
+      onBackClick();
+    } else {
+      router.replace('/');
+    }
   };
 
   // Render the Pokemon data with Suspense
   return (
-    <Suspense fallback={<PokemonLoading />}>
+    <Suspense fallback={<PokemonDetailsSkeleton />}>
       {pokemon && (
         <PokemonDetails 
           pokemon={pokemon} 
