@@ -89,7 +89,7 @@ function HomeContent() {
         }
       }
     }
-  }, [searchQuery, isMounted, navigationHistory.length, searchInputValue]);
+  }, [searchQuery, isMounted, navigationHistory, searchInputValue]);
 
   // On first load, populate localStorage with all Pokémon names if missing
   useEffect(() => {
