@@ -22,24 +22,72 @@ export function PokemonDetails({ pokemon, onEvolutionClick, onBackClick }: Pokem
 
         {/* Pokémon Details */}
         <div className="flex flex-col md:flex-row gap-4 rounded-lg">
-          {/* First Column: Pokemon Image with white background - Equal width on desktop */}
-          <div className="w-full md:w-1/2 bg-white flex items-center justify-center p-4">
-            <div 
-              className="relative w-40 h-40 md:w-56 md:h-56 flex items-center justify-center"
-              style={{ aspectRatio: '1/1' }}
-            >
-              <ImageWithFallback
-                src={pokemon.image || '/icon.svg'}
-                alt={pokemon.name}
-                width={224}
-                height={224}
-                className="object-contain w-full h-full"
-                priority={true}
-                loading="eager"
-                fetchPriority="high"
-                sizes="(max-width: 768px) 160px, 224px"
-              />
+          {/* First Column: Pokemon Image + Evolution Requirements + Evolutions */}
+          <div className="w-full md:w-1/2 bg-white rounded-lg flex flex-col min-h-[500px]">
+            {/* Pokemon Image Section */}
+            <div className="flex-[2] flex flex-col items-center justify-center p-4">
+              <div 
+                className="relative w-40 h-40 md:w-56 md:h-56 flex items-center justify-center mb-4"
+                style={{ aspectRatio: '1/1' }}
+              >
+                <ImageWithFallback
+                  src={pokemon.image || '/icon.svg'}
+                  alt={pokemon.name}
+                  width={224}
+                  height={224}
+                  className="object-contain w-full h-full"
+                  priority={true}
+                  loading="eager"
+                  fetchPriority="high"
+                  sizes="(max-width: 768px) 160px, 224px"
+                />
+              </div>
+              
+              {/* Evolution Requirements Section */}
+              {pokemon.evolutionRequirements && (
+                <div className="w-full max-w-sm">
+                  <h3 className="flex items-center text-sm font-semibold text-gray-600 mb-2">
+                    <ImageWithFallback src="/game-icon/evolution.svg" width={16} height={16} alt="Evolution requirement icon" className="mr-2" priority={false} loading="lazy" />
+                    <span>Evolution Requirement</span>
+                  </h3>
+                  <div className="bg-gray-100 rounded-lg p-3">
+                    <p className="text-sm text-amber-600 font-medium">
+                      {pokemon.evolutionRequirements.name}: {pokemon.evolutionRequirements.amount}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
+            
+            {/* Second Row: Evolutions - 25% height */}
+            {pokemon.evolutions && pokemon.evolutions.length > 0 && (
+              <div className="flex-1 p-4 border-t border-gray-200">
+                <h3 className="flex items-center text-lg font-bold text-gray-800 mb-3">
+                  <ImageWithFallback src="/game-icon/evolution.svg" width={20} height={20} alt="Evolution icon" className="mr-2" priority={false} loading="lazy" />
+                  <span>Evolutions</span>
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 transition-colors">
+                  {pokemon.evolutions.map((evolution: Pokemon) => (
+                    <div key={evolution.id} className="flex flex-col items-center p-2 bg-white shadow-md rounded-lg cursor-pointer hover:shadow-amber-300 hover:-translate-y-1 transition-transform duration-200 ease-in-out flex-shrink-0" onClick={() => onEvolutionClick(evolution.name)}>
+                      <div className="w-12 h-12 mb-2 relative" style={{ aspectRatio: '1/1' }}>
+                        <ImageWithFallback
+                          src={evolution.image || '/icon.svg'}
+                          alt={evolution.name}
+                          className="w-full h-full object-contain rounded-lg"
+                          width={48}
+                          height={48}
+                          priority={false}
+                          loading="lazy"
+                        />
+                      </div>
+                      <span className="text-xs font-medium text-gray-700 text-center flex-shrink-0">
+                        {evolution.name}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Second Column: Pokemon Info with dark background - Equal width on desktop */}
@@ -243,63 +291,9 @@ export function PokemonDetails({ pokemon, onEvolutionClick, onBackClick }: Pokem
                 </div>
               </div>
             )}
-
-            {/* Evolution */}
-            {
-              pokemon.evolutions && pokemon.evolutions.length > 0 && (
-                <div className="border-1 border-white bg-white rounded-md p-3 md:p-3 md:pl-2 h-auto">
-                  <h3 className="flex items-center text-lg md:text-xl font-bold text-gray-800 mb-3">
-                    <ImageWithFallback src="/game-icon/evolution.svg" width={22} height={22} alt="Evolution icon" className="mr-2" priority={false} loading="lazy" />
-                    <span>Evolutions</span>
-                  </h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 min-h-[120px]">
-                    {
-                      pokemon.evolutions.map((evolution: Pokemon) => (
-                        <div key={evolution.id} className="flex flex-col items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer" onClick={() => onEvolutionClick(evolution.name)}>
-                          <div className="w-16 h-16 mb-2 relative hover:-translate-y-1 transition-transform duration-200 ease-in-out" style={{ aspectRatio: '1/1' }}>
-                            <ImageWithFallback
-                              src={evolution.image || '/icon.svg'}
-                              alt={evolution.name}
-                              className="w-full h-full object-contain rounded-lg"
-                              width={64}
-                              height={64}
-                              priority={false}
-                              loading="lazy"
-                            />
-                          </div>
-                          <span className="text-sm font-medium text-gray-700 text-center">
-                            {evolution.name}
-                          </span>
-                        </div>
-                      ))
-                    }
-                  </div>
-              </div>
-              )
-            }
           </div>
         </div>
 
-        {/* Evolution Requirements and Evolutions */}
-        {(pokemon.evolutionRequirements || (pokemon.evolutions && pokemon.evolutions.length > 0)) && (
-          <div className="w-full bg-white rounded-md p-4 shadow-sm min-h-[200px] mt-6">
-            {/* Evolution Requirements */}
-            {pokemon.evolutionRequirements && (
-              <div className="mb-6">
-                <h3 className="flex items-center text-lg md:text-xl font-bold text-gray-800 mb-3">
-                  <ImageWithFallback src="/game-icon/evolution.svg" width={24} height={24} alt="Evolution icon" className="mr-2" priority={false} loading="lazy" />
-                  <span>Evolution Requirements</span>
-                </h3>
-                <div className="bg-blue-50 rounded-lg p-3 min-h-[60px]">
-                  <p className="text-sm text-blue-800 font-medium">
-                    {pokemon.evolutionRequirements.name}: {pokemon.evolutionRequirements.amount}
-                  </p>
-                </div>
-              </div>
-            )}
-            
-          </div>
-        )}
       </div>
     </div>
   );

@@ -15,16 +15,53 @@ export function PokemonDetailsSkeleton() {
 
         {/* Main content skeleton */}
         <div className="flex flex-col md:flex-row gap-4 rounded-lg">
-          {/* Image skeleton */}
-          <div className="w-full md:w-1/2 bg-white flex items-center justify-center p-4">
-            <div 
-              className="bg-gray-300 rounded-lg"
-              style={{ 
-                width: '160px', 
-                height: '160px',
-                aspectRatio: '1/1'
-              }}
-            />
+          {/* First Column: Image + Evolution Requirements + Evolutions skeleton */}
+           <div className="w-full md:w-1/2 bg-white rounded-lg flex flex-col min-h-[500px]">
+             {/* Pokemon Image + Evolution Requirements skeleton */}
+             <div className="flex-[2] flex flex-col items-center justify-center p-4">
+               <div 
+                 className="bg-gray-300 rounded-lg mb-4"
+                 style={{ 
+                   width: '160px', 
+                   height: '160px',
+                   aspectRatio: '1/1'
+                 }}
+               />
+               
+               {/* Evolution Requirements skeleton */}
+               <div className="w-full max-w-sm">
+                 <div className="flex items-center mb-2">
+                   <div className="w-4 h-4 bg-gray-300 rounded mr-2"></div>
+                   <div className="h-4 bg-gray-300 rounded w-32"></div>
+                 </div>
+                 <div className="bg-blue-100 rounded-lg p-3">
+                   <div className="h-4 bg-gray-300 rounded w-full"></div>
+                 </div>
+               </div>
+             </div>
+            
+            {/* Evolutions skeleton - 25% height */}
+            <div className="flex-1 p-4 border-t border-gray-200">
+              <div className="flex items-center mb-3">
+                <div className="w-5 h-5 bg-gray-300 rounded mr-2"></div>
+                <div className="h-5 bg-gray-300 rounded w-20"></div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[...Array(2)].map((_, i) => (
+                  <div key={i} className="flex flex-col items-center p-3 bg-gray-50 rounded-lg">
+                    <div 
+                      className="bg-gray-300 rounded mb-2 flex-shrink-0"
+                      style={{ 
+                        width: '48px', 
+                        height: '48px',
+                        aspectRatio: '1/1'
+                      }}
+                    />
+                    <div className="h-3 bg-gray-300 rounded w-16"></div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* Info skeleton */}
@@ -102,7 +139,7 @@ export function PokemonDetailsSkeleton() {
             </div>
           </div>
 
-          {/* Resistances skeleton */}
+          {/* Second Column: Resistances and Weaknesses skeleton */}
           <div className="w-full flex flex-col items-start border-1 border-white bg-white rounded-md p-5">
             <div className="flex items-center mb-3">
               <div className="w-6 h-6 bg-gray-300 rounded mr-1"></div>
