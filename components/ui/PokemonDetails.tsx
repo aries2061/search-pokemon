@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { PokemonDataProps } from '@/lib/interfaces/ui';
 import { Pokemon, Attack } from '@/lib/types';
@@ -23,15 +23,21 @@ export function PokemonDetails({ pokemon, onEvolutionClick, onBackClick }: Pokem
         {/* Pokémon Details */}
         <div className="flex flex-col md:flex-row gap-4 rounded-lg">
           {/* First Column: Pokemon Image with white background - Equal width on desktop */}
-          <div className="w-full md:w-1/2 bg-white flex items-center justify-center">
-            <div className="relative w-40 h-40 md:w-56 md:h-56">
+          <div className="w-full md:w-1/2 bg-white flex items-center justify-center p-4">
+            <div 
+              className="relative w-40 h-40 md:w-56 md:h-56 flex items-center justify-center"
+              style={{ aspectRatio: '1/1' }}
+            >
               <ImageWithFallback
                 src={pokemon.image || '/icon.svg'}
                 alt={pokemon.name}
-                fill
-                className="object-contain"
+                width={224}
+                height={224}
+                className="object-contain w-full h-full"
                 priority={true}
                 loading="eager"
+                fetchPriority="high"
+                sizes="(max-width: 768px) 160px, 224px"
               />
             </div>
           </div>
@@ -63,31 +69,31 @@ export function PokemonDetails({ pokemon, onEvolutionClick, onBackClick }: Pokem
             </div>
 
             {/* Row 3: Stats Grid with white background - 2 rows, 3 columns */}
-            <div className="bg-white rounded-lg p-4 flex-1">
+            <div className="bg-white rounded-lg p-4 flex-1 min-h-[120px]">
               <h3 className="text-lg font-semibold text-gray-800 mb-3">Stats</h3>
               <div className="grid grid-cols-2 gap-3 h-auto">
                 {/* First Row */}
                 {/* HP */}
-                <div className="text-center flex flex-col justify-center">
+                <div className="text-center flex flex-col justify-center min-h-[60px]">
                   <div className="text-lg md:text-xl font-bold text-gray-800">Height</div>
                   <div className="text-sm md:text-md text-gray-800">{pokemon.height.minimum}-{pokemon.height.maximum}</div>
                 </div>
 
                 {/* Attack (using maxCP as attack stat) */}
-                <div className="text-center flex flex-col justify-center">
+                <div className="text-center flex flex-col justify-center min-h-[60px]">
                   <div className="text-lg md:text-xl font-bold text-gray-800">Weight</div>
                   <div className="text-sm md:text-md text-gray-800">{pokemon.weight.minimum}-{pokemon.weight.maximum}</div>
                 </div>
 
                 {/* Second Row */}
                 {/* Special Attack (calculated) */}
-                <div className="text-center flex flex-col justify-center">
+                <div className="text-center flex flex-col justify-center min-h-[60px]">
                   <div className="text-lg md:text-xl font-bold text-gray-800">Max HP</div>
                   <div className="text-sm md:text-md text-gray-800">{pokemon.maxHP}</div>
                 </div>
 
                 {/* Special Defense (calculated) */}
-                <div className="text-center flex flex-col justify-center">
+                <div className="text-center flex flex-col justify-center min-h-[60px]">
                   <div className="text-lg md:text-xl font-bold text-gray-800">Max CP</div>
                   <div className="text-sm md:text-md text-gray-800">{pokemon.maxCP}</div>
                 </div>
@@ -107,7 +113,7 @@ export function PokemonDetails({ pokemon, onEvolutionClick, onBackClick }: Pokem
           
           {/* Column 1: Attacks - Full width on mobile, first column on desktop */}
           {pokemon.attacks && (
-            <div className="w-full md:col-span-1 flex flex-col items-start border-1 border-white bg-white rounded-md p-3 md:p-1 md:pl-2">
+            <div className="w-full md:col-span-1 flex flex-col items-start border-1 border-white bg-white rounded-md p-3 md:p-1 md:pl-2 min-h-[400px]">
               <h3 className="flex items-center justify-center text-lg md:text-xl font-bold text-gray-800 p-1 mb-3">
                 <ImageWithFallback src="/game-icon/sword.svg" width={24} height={24} alt="Sword icon" className="mr-1" priority={false} loading="lazy" /> 
                 <span>Attacks</span>
@@ -120,7 +126,7 @@ export function PokemonDetails({ pokemon, onEvolutionClick, onBackClick }: Pokem
                       Fast Attacks
                     </span>
                   </div>
-                  <div className="overflow-x-auto">
+                  <div className="overflow-x-auto min-h-[120px]">
                     <table className="w-full border-collapse bg-white rounded-lg shadow-sm">
                       <thead>
                         <tr className="bg-gray-100">
@@ -163,7 +169,7 @@ export function PokemonDetails({ pokemon, onEvolutionClick, onBackClick }: Pokem
                       Special Attacks
                     </span>
                   </div>
-                  <div className="overflow-x-auto">
+                  <div className="overflow-x-auto min-h-[120px]">
                     <table className="w-full border-collapse bg-white rounded-lg shadow-sm">
                       <thead>
                         <tr className="bg-gray-100">
@@ -202,89 +208,91 @@ export function PokemonDetails({ pokemon, onEvolutionClick, onBackClick }: Pokem
             </div>
           )}
 
-          {/* Column 2: Resistances - Full width on mobile, second column on desktop */}
-          {pokemon.resistant && (
-            <div className="w-full flex flex-col items-start border-1 border-white bg-white rounded-md p-5 md:p-1">
-              <h3 className="flex items-center justify-center text-lg md:text-xl font-bold p-1 text-gray-800 mb-3">
-                <ImageWithFallback src="/game-icon/shield.svg" width={24} height={24} alt="Shield icon" className="mr-1" priority={false} loading="lazy" /> 
-                <span>Resistances</span>
-              </h3>
-              <div className="grid w-full">
-                {pokemon.resistant.map((type: string) => (
-                  <div
-                    key={type}
-                    className="flex items-start bg-green-50 rounded text-sm md:text-md mb-1 py-2"
-                  >
-                    <span className="font-medium text-green-700 text-bold ml-2">{type}</span>
-                  </div>
-                ))}
-
-                {/* Column 3: Weaknesses */}
-                {pokemon.weaknesses && (
-                  <div className="w-full flex flex-col items-start border-1 border-white bg-white rounded-md mt-3 md:p-1">
-                    <h3 className="flex items-center justify-center text-lg md:text-xl font-bold text-gray-800 p-1 mb-3">   
-                      <ImageWithFallback src="/game-icon/weak.svg" width={24} height={24} alt="Weakness icon" className="mr-1" priority={false} loading="lazy" /> 
-                      <span>Weaknesses</span>
-                    </h3>
-                    <div className="grid w-full">
-                      {
-                      pokemon.weaknesses.map((type: string) => (
-                          <div
-                            key={type}
-                            className="flex items-start bg-purple-50 rounded text-sm md:text-md mb-1 py-2"
-                          >
-                            <span className="font-medium text-gray-700 text-bold ml-2">{type}</span>
-                          </div>
-                        ))
-                      }
-                    </div>
-                  </div>
-                )}
+          {/* Column 2: Resistances, Weaknesses, Evolution - Full width on mobile, second column on desktop */}
+          <div className="w-full md:col-span-1 flex flex-col gap-6 min-h-[400px]">
+            {/* Resistances */}
+            {pokemon.resistant && pokemon.resistant.length > 0 && (
+              <div className="border-1 border-white bg-white rounded-md p-3 md:p-1 md:pl-2 min-h-[150px]">
+                <h3 className="flex items-center justify-center text-lg md:text-xl font-bold text-gray-800 p-1 mb-3">
+                  <ImageWithFallback src="/game-icon/shield.svg" width={24} height={24} alt="Shield icon" className="mr-1" priority={true} loading="eager" />
+                  <span>Resistances</span>
+                </h3>
+                <div className="flex flex-wrap gap-2 min-h-[60px]">
+                  {pokemon.resistant.map((type: string) => (
+                    <span key={type} className="px-3 py-1 bg-green-500 text-white rounded-md text-sm font-medium">
+                      {type}
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+
+            {/* Weaknesses */}
+            {pokemon.weaknesses && pokemon.weaknesses.length > 0 && (
+              <div className="border-1 border-white bg-white rounded-md p-3 md:p-1 md:pl-2 min-h-[150px]">
+                <h3 className="flex items-center justify-center text-lg md:text-xl font-bold text-gray-800 p-1 mb-3">
+                   <ImageWithFallback src="/game-icon/weak.svg" width={24} height={24} alt="Weakness icon" className="mr-1" priority={true} loading="eager" />
+                   <span>Weaknesses</span>
+                 </h3>
+                <div className="flex flex-wrap gap-2 min-h-[60px]">
+                  {pokemon.weaknesses.map((type: string) => (
+                    <span key={type} className="px-3 py-1 bg-red-500 text-white rounded-md text-sm font-medium">
+                      {type}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Evolution Requirements Section */}
-        {pokemon.evolutionRequirements && (
-          <div className="mt-6">
-            <h3 className="text-lg font-semibold mb-2">Evolution Requirements</h3>
-            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <p className="text-sm">
-                <span className="font-medium">Requires:</span> {pokemon.evolutionRequirements.amount} {pokemon.evolutionRequirements.name}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Evolutions Section */}
-        {pokemon.evolutions && pokemon.evolutions.length > 0 && (
-          <div className="mt-6">
-            <h3 className="text-lg font-semibold mb-4">Evolutions</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {pokemon.evolutions.map((evolution: Pokemon) => (
-                <div
-                  key={evolution.id}
-                  className="flex flex-col items-center p-3 border border-gray-200 rounded-lg bg-white cursor-pointer transition-colors hover:shadow-md"
-                  onClick={() => onEvolutionClick(evolution.name)}
-                >
-                  <div className="relative w-20 h-20 mb-2 overflow-hidden flex items-center justify-center">
-                    {evolution.image && (
-                      <ImageWithFallback
-                        src={evolution.image || '/icon.svg'}
-                        alt={evolution.name}
-                        width={80}
-                        height={80}
-                        className="object-contain max-w-full max-h-full"
-                        priority={false}
-                        loading="lazy"
-                      />
-                    )}
-                  </div>
-                  <span className="text-sm font-medium">{evolution.name}</span>
+        {/* Evolution Requirements and Evolutions */}
+        {(pokemon.evolutionRequirements || (pokemon.evolutions && pokemon.evolutions.length > 0)) && (
+          <div className="w-full bg-white rounded-md p-4 shadow-sm min-h-[200px] mt-6">
+            {/* Evolution Requirements */}
+            {pokemon.evolutionRequirements && (
+              <div className="mb-6">
+                <h3 className="flex items-center text-lg md:text-xl font-bold text-gray-800 mb-3">
+                  <ImageWithFallback src="/game-icon/evolution.svg" width={24} height={24} alt="Evolution icon" className="mr-2" priority={false} loading="lazy" />
+                  <span>Evolution Requirements</span>
+                </h3>
+                <div className="bg-blue-50 rounded-lg p-3 min-h-[60px]">
+                  <p className="text-sm text-blue-800 font-medium">
+                    {pokemon.evolutionRequirements.name}: {pokemon.evolutionRequirements.amount}
+                  </p>
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
+
+            {/* Evolutions */}
+            {pokemon.evolutions && pokemon.evolutions.length > 0 && (
+              <div>
+                <h3 className="flex items-center text-lg md:text-xl font-bold text-gray-800 mb-3">
+                  <ImageWithFallback src="/game-icon/evolution.svg" width={24} height={24} alt="Evolution icon" className="mr-2" priority={false} loading="lazy" />
+                  <span>Evolutions</span>
+                </h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 min-h-[120px]">
+                  {pokemon.evolutions.map((evolution: Pokemon) => (
+                    <div key={evolution.id} className="flex flex-col items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer" onClick={() => onEvolutionClick(evolution.name)}>
+                      <div className="w-16 h-16 mb-2 relative" style={{ aspectRatio: '1/1' }}>
+                        <ImageWithFallback
+                          src={evolution.image || '/icon.svg'}
+                          alt={evolution.name}
+                          className="w-full h-full object-contain rounded-lg"
+                          width={64}
+                          height={64}
+                          priority={false}
+                          loading="lazy"
+                        />
+                      </div>
+                      <span className="text-sm font-medium text-gray-700 text-center">
+                        {evolution.name}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

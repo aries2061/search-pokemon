@@ -17,15 +17,16 @@ export default function PokemonCard({ pokemon, onClick }: PokemonCardProps) {
   return (
     <Link href={`/?search=${encodeURIComponent(pokemon.name)}`} onClick={handleClick}>
       <Card className="h-full flex flex-col">
-        <div className="flex justify-center flex-grow p-4">
+        <div className="flex justify-center flex-grow p-4" style={{ aspectRatio: '1/1.2' }}>
           <ImageWithFallback
             src={pokemon.compressedImage || pokemon.image || '/icon.svg'}
             alt={pokemon.name}
-            width={20}
-            height={20}
+            width={165}
+            height={165}
             className="object-contain w-[165px] h-[165px]"
             priority={true}
             loading="eager"
+            fetchPriority="high"
           />
         </div>
         <CardContent className="text-center mt-auto pt-4 border-t border-gray-100">

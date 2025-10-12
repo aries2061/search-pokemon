@@ -1,15 +1,19 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, lazy } from 'react';
 import { useQuery } from '@apollo/client/react';
 import Image from 'next/image';
 import { SearchInput } from '@/components/ui/SearchInput';
-import PokemonResult from '@/components/pokemon-result';
 import Pagination from '@/components/pagination';
+import SkeletonGrid from '@/components/ui/SkeletonGrid';
 import { Pokemon } from '@/lib/types';
 import { GET_POKEMONS } from '@/lib/graphql/queries';
+import { initPerformanceMonitoring, trackInteraction } from '@/lib/performance';
 import Link from 'next/link';
+
+// Lazy load the PokemonResult component for code splitting
+const PokemonResult = lazy(() => import('@/components/pokemon-result'));
 
 function HomeContent() {
   const searchParams = useSearchParams();
@@ -99,7 +103,13 @@ function HomeContent() {
     window.location.href = `/?search=${encodeURIComponent(query)}`;
   };
 
+  useEffect(() => {
+    // Initialize performance monitoring
+    initPerformanceMonitoring();
+  }, []);
+
   const handlePokemonClick = (pokemonName: string) => {
+    trackInteraction('pokemon_click', pokemonName);
     setSearchInputValue(pokemonName);
     window.location.href = `/?search=${encodeURIComponent(pokemonName)}`;
   };
@@ -122,6 +132,7 @@ function HomeContent() {
               width={140} 
               height={80} 
               priority
+              fetchPriority="high"
               style={{ height: 'auto' }}
             />
           </div>
@@ -138,12 +149,14 @@ function HomeContent() {
 
         {searchQuery ? (
           <div className="mt-8">
-            <PokemonResult pokemonName={searchQuery} onPokemonClick={handlePokemonClick} />
+            <Suspense fallback={<div className="text-center p-8"><p className="text-gray-500">Loading search results...</p></div>}>
+              <PokemonResult pokemonName={searchQuery} onPokemonClick={handlePokemonClick} />
+            </Suspense>
           </div>
         ) : (
           <>
             {/* Display all Pokemon section */}
-            {allPokemons.length > 0 && (
+            {allPokemons.length > 0 ? (
               <>
                 <div className="mt-8">
                   <div className="flex gap-1.5 items-center mb-4 pl-1">
@@ -162,10 +175,13 @@ function HomeContent() {
                               <Image
                                 src={pokemon.image || '/icon.svg'}
                                 alt={pokemon.name}
-                                width={80}
-                                height={80}
+                                width={96}
+                                height={96}
                                 className="w-20 h-20 md:w-24 md:h-24 object-contain"
-                                loading="lazy"
+                                loading={index < 8 ? "eager" : "lazy"}
+                                priority={index < 4}
+                                fetchPriority={index < 4 ? "high" : "auto"}
+                                sizes="(max-width: 768px) 80px, 96px"
                               />
                             </div>
                             <div className="mt-auto">
@@ -191,6 +207,13 @@ function HomeContent() {
                 )}
                 <p className="text-sm text-gray-600 text-center my-3"> Showing 16 Pokémon per page</p>
               </>
+            ) : (
+              <div className="mt-8">
+                <div className="flex gap-1.5 items-center mb-4 pl-1">
+                  <h2 className="text-xl font-semibold">Loading Pokémon...</h2>
+                </div>
+                <SkeletonGrid count={16} />
+              </div>
             )}
           </>
         )}

@@ -8,7 +8,6 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pa
   const generatePageNumbers = () => {
     const pages = [];
     const maxVisiblePages = 5; // Maximum pages to show on larger screens
-    const maxMobilePages = 3; // Maximum pages to show on mobile screens
     
     if (totalPages <= maxVisiblePages) {
       // Show all pages if total is small

@@ -1,0 +1,154 @@
+'use client';
+
+import React from 'react';
+import { ArrowLeft } from 'lucide-react';
+
+export function PokemonDetailsSkeleton() {
+  return (
+    <div className="rounded-lg shadow-lg overflow-hidden bg-gray-100 animate-pulse">
+      <div className="p-3 sm:p-6">
+        {/* Back button skeleton */}
+        <div className="flex items-center mb-4">
+          <ArrowLeft className="w-4 h-4 mr-1 text-gray-300" />
+          <div className="h-4 bg-gray-300 rounded w-12"></div>
+        </div>
+
+        {/* Main content skeleton */}
+        <div className="flex flex-col md:flex-row gap-4 rounded-lg">
+          {/* Image skeleton */}
+          <div className="w-full md:w-1/2 bg-white flex items-center justify-center p-4">
+            <div 
+              className="bg-gray-300 rounded-lg"
+              style={{ 
+                width: '160px', 
+                height: '160px',
+                aspectRatio: '1/1'
+              }}
+            />
+          </div>
+
+          {/* Info skeleton */}
+          <div className="w-full md:w-1/2 bg-gray-800 rounded-lg p-4 text-white flex flex-col gap-4">
+            {/* Name and number skeleton */}
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center">
+                <div className="h-8 bg-gray-600 rounded w-32 mr-2"></div>
+                <div className="h-6 bg-gray-600 rounded w-20"></div>
+              </div>
+              <div className="h-6 bg-gray-600 rounded w-12"></div>
+            </div>
+
+            {/* Types skeleton */}
+            <div className="flex flex-wrap gap-2 mb-2">
+              <div className="h-6 bg-gray-600 rounded-full w-16"></div>
+              <div className="h-6 bg-gray-600 rounded-full w-20"></div>
+            </div>
+
+            {/* Stats skeleton */}
+            <div className="bg-white rounded-lg p-4 flex-1 min-h-[120px]">
+              <div className="h-6 bg-gray-300 rounded w-16 mb-3"></div>
+              <div className="grid grid-cols-2 gap-3">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="text-center flex flex-col justify-center min-h-[60px]">
+                    <div className="h-5 bg-gray-300 rounded w-16 mx-auto mb-1"></div>
+                    <div className="h-4 bg-gray-300 rounded w-12 mx-auto"></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div className="flex justify-center my-4 sm:my-5">
+          <hr className="w-[100%] sm:w-[75%] border-gray-300" />
+        </div>
+
+        {/* Details skeleton */}
+        <div className="flex flex-col md:grid md:grid-cols-2 gap-4">
+          {/* Attacks skeleton */}
+          <div className="w-full md:col-span-1 flex flex-col items-start border-1 border-white bg-white rounded-md p-3">
+            <div className="flex items-center mb-3">
+              <div className="w-6 h-6 bg-gray-300 rounded mr-1"></div>
+              <div className="h-6 bg-gray-300 rounded w-16"></div>
+            </div>
+            
+            {/* Fast attacks table skeleton */}
+            <div className="w-full mb-6">
+              <div className="h-6 bg-gray-300 rounded w-24 mb-3"></div>
+              <div className="space-y-2">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="flex gap-4">
+                    <div className="h-4 bg-gray-300 rounded flex-1"></div>
+                    <div className="h-4 bg-gray-300 rounded w-16"></div>
+                    <div className="h-4 bg-gray-300 rounded w-12"></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Special attacks table skeleton */}
+            <div className="w-full">
+              <div className="h-6 bg-gray-300 rounded w-28 mb-3"></div>
+              <div className="space-y-2">
+                {[...Array(2)].map((_, i) => (
+                  <div key={i} className="flex gap-4">
+                    <div className="h-4 bg-gray-300 rounded flex-1"></div>
+                    <div className="h-4 bg-gray-300 rounded w-16"></div>
+                    <div className="h-4 bg-gray-300 rounded w-12"></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Resistances skeleton */}
+          <div className="w-full flex flex-col items-start border-1 border-white bg-white rounded-md p-5">
+            <div className="flex items-center mb-3">
+              <div className="w-6 h-6 bg-gray-300 rounded mr-1"></div>
+              <div className="h-6 bg-gray-300 rounded w-20"></div>
+            </div>
+            <div className="grid w-full gap-1">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-8 bg-gray-300 rounded"></div>
+              ))}
+            </div>
+
+            {/* Weaknesses skeleton */}
+            <div className="w-full mt-3">
+              <div className="flex items-center mb-3">
+                <div className="w-6 h-6 bg-gray-300 rounded mr-1"></div>
+                <div className="h-6 bg-gray-300 rounded w-20"></div>
+              </div>
+              <div className="grid w-full gap-1">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="h-8 bg-gray-300 rounded"></div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Evolution skeleton */}
+        <div className="mt-6">
+          <div className="h-6 bg-gray-300 rounded w-20 mb-4"></div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="flex flex-col items-center p-3 border border-gray-200 rounded-lg bg-white">
+                <div 
+                  className="bg-gray-300 rounded mb-2"
+                  style={{ 
+                    width: '80px', 
+                    height: '80px',
+                    aspectRatio: '1/1'
+                  }}
+                />
+                <div className="h-4 bg-gray-300 rounded w-16"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -13,6 +13,8 @@ interface ImageWithFallbackProps {
   priority?: boolean;
   fallbackSrc?: string;
   loading?: 'lazy' | 'eager';
+  sizes?: string;
+  fetchPriority?: 'high' | 'low' | 'auto';
 }
 
 export default function ImageWithFallback({
@@ -24,7 +26,9 @@ export default function ImageWithFallback({
   fill,
   priority,
   fallbackSrc = '/icon.svg',
-  loading = 'lazy'
+  loading = 'lazy',
+  sizes,
+  fetchPriority
 }: ImageWithFallbackProps) {
   const [imgSrc, setImgSrc] = useState(src);
   const [hasError, setHasError] = useState(false);
@@ -52,6 +56,8 @@ export default function ImageWithFallback({
       fill={fill}
       priority={priority}
       loading={priority ? 'eager' : loading}
+      sizes={sizes}
+      fetchPriority={fetchPriority}
       onError={handleError}
     />
   );
