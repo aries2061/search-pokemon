@@ -81,16 +81,55 @@ export function PokemonDetailsSkeleton() {
               <div className="h-6 bg-gray-600 rounded-full w-20"></div>
             </div>
 
-            {/* Stats skeleton */}
-            <div className="bg-white rounded-lg p-4 flex-1 min-h-[120px]">
-              <div className="h-6 bg-gray-300 rounded w-16 mb-3"></div>
-              <div className="grid grid-cols-2 gap-3">
+            {/* Combined Stats and Attack Information skeleton */}
+            <div className="bg-white rounded-lg p-3 flex-1">
+              {/* Stats skeleton */}
+              <div className="h-5 bg-gray-300 rounded w-12 mb-2"></div>
+              <div className="grid grid-cols-2 gap-2 mb-4">
                 {[...Array(4)].map((_, i) => (
-                  <div key={i} className="text-center flex flex-col justify-center min-h-[60px]">
-                    <div className="h-5 bg-gray-300 rounded w-16 mx-auto mb-1"></div>
-                    <div className="h-4 bg-gray-300 rounded w-12 mx-auto"></div>
+                  <div key={i} className="text-center flex flex-col justify-center min-h-[40px]">
+                    <div className="h-4 bg-gray-300 rounded w-12 mx-auto mb-1"></div>
+                    <div className="h-3 bg-gray-300 rounded w-8 mx-auto"></div>
                   </div>
                 ))}
+              </div>
+
+              {/* Attack Information skeleton */}
+              <div className="flex items-center mb-2">
+                <div className="w-4 h-4 bg-gray-300 rounded mr-1"></div>
+                <div className="h-5 bg-gray-300 rounded w-16"></div>
+              </div>
+              <div className="flex flex-col gap-3">
+                {/* Fast attacks skeleton */}
+                <div>
+                  <div className="h-4 bg-gray-300 rounded w-20 mb-1"></div>
+                  <div className="space-y-1">
+                    {[...Array(2)].map((_, i) => (
+                      <div key={i} className="flex justify-between items-center">
+                        <div className="h-3 bg-gray-300 rounded w-16"></div>
+                        <div className="flex items-center gap-2">
+                          <div className="h-3 bg-gray-300 rounded w-12"></div>
+                          <div className="h-3 bg-gray-300 rounded w-6"></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {/* Special attacks skeleton */}
+                <div>
+                  <div className="h-4 bg-gray-300 rounded w-24 mb-1"></div>
+                  <div className="space-y-1">
+                    {[...Array(2)].map((_, i) => (
+                      <div key={i} className="flex justify-between items-center">
+                        <div className="h-3 bg-gray-300 rounded w-16"></div>
+                        <div className="flex items-center gap-2">
+                          <div className="h-3 bg-gray-300 rounded w-12"></div>
+                          <div className="h-3 bg-gray-300 rounded w-6"></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -102,44 +141,8 @@ export function PokemonDetailsSkeleton() {
         </div>
 
         {/* Details skeleton */}
-        <div className="flex flex-col md:grid md:grid-cols-2 gap-4">
-          {/* Attacks skeleton */}
-          <div className="w-full md:col-span-1 flex flex-col items-start border-1 border-white bg-white rounded-md p-3">
-            <div className="flex items-center mb-3">
-              <div className="w-6 h-6 bg-gray-300 rounded mr-1"></div>
-              <div className="h-6 bg-gray-300 rounded w-16"></div>
-            </div>
-            
-            {/* Fast attacks table skeleton */}
-            <div className="w-full mb-6">
-              <div className="h-6 bg-gray-300 rounded w-24 mb-3"></div>
-              <div className="space-y-2">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="flex gap-4">
-                    <div className="h-4 bg-gray-300 rounded flex-1"></div>
-                    <div className="h-4 bg-gray-300 rounded w-16"></div>
-                    <div className="h-4 bg-gray-300 rounded w-12"></div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Special attacks table skeleton */}
-            <div className="w-full">
-              <div className="h-6 bg-gray-300 rounded w-28 mb-3"></div>
-              <div className="space-y-2">
-                {[...Array(2)].map((_, i) => (
-                  <div key={i} className="flex gap-4">
-                    <div className="h-4 bg-gray-300 rounded flex-1"></div>
-                    <div className="h-4 bg-gray-300 rounded w-16"></div>
-                    <div className="h-4 bg-gray-300 rounded w-12"></div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Second Column: Resistances and Weaknesses skeleton */}
+        <div className="flex flex-col md:grid md:grid-cols-1 gap-4">
+          {/* Resistances and Weaknesses skeleton */}
           <div className="w-full flex flex-col items-start border-1 border-white bg-white rounded-md p-5">
             <div className="flex items-center mb-3">
               <div className="w-6 h-6 bg-gray-300 rounded mr-1"></div>

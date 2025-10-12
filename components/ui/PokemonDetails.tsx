@@ -116,37 +116,88 @@ export function PokemonDetails({ pokemon, onEvolutionClick, onBackClick }: Pokem
               </div>
             </div>
 
-            {/* Row 3: Stats Grid with white background - 2 rows, 3 columns */}
-            <div className="bg-white rounded-lg p-4 flex-1 min-h-[120px]">
-              <h3 className="text-lg font-semibold text-gray-800 mb-3">Stats</h3>
-              <div className="grid grid-cols-2 gap-3 h-auto">
+            {/* Combined Stats and Attack Information Section */}
+            <div className="bg-white rounded-md p-3 flex-1">
+              {/* Stats Section */}
+              <h3 className="text-md font-semibold text-gray-800 mb-2">Stats</h3>
+              <div className="grid grid-cols-2 gap-2 h-auto mb-4">
                 {/* First Row */}
-                {/* HP */}
-                <div className="text-center flex flex-col justify-center min-h-[60px]">
-                  <div className="text-lg md:text-xl font-bold text-gray-800">Height</div>
-                  <div className="text-sm md:text-md text-gray-800">{pokemon.height.minimum}-{pokemon.height.maximum}</div>
+                <div className="text-center flex flex-col justify-center min-h-[40px]">
+                  <div className="text-sm font-bold text-gray-800">Height</div>
+                  <div className="text-xs text-gray-800">{pokemon.height.minimum}-{pokemon.height.maximum}</div>
                 </div>
 
-                {/* Attack (using maxCP as attack stat) */}
-                <div className="text-center flex flex-col justify-center min-h-[60px]">
-                  <div className="text-lg md:text-xl font-bold text-gray-800">Weight</div>
-                  <div className="text-sm md:text-md text-gray-800">{pokemon.weight.minimum}-{pokemon.weight.maximum}</div>
+                <div className="text-center flex flex-col justify-center min-h-[40px]">
+                  <div className="text-sm font-bold text-gray-800">Weight</div>
+                  <div className="text-xs text-gray-800">{pokemon.weight.minimum}-{pokemon.weight.maximum}</div>
                 </div>
 
                 {/* Second Row */}
-                {/* Special Attack (calculated) */}
-                <div className="text-center flex flex-col justify-center min-h-[60px]">
-                  <div className="text-lg md:text-xl font-bold text-gray-800">Max HP</div>
-                  <div className="text-sm md:text-md text-gray-800">{pokemon.maxHP}</div>
+                <div className="text-center flex flex-col justify-center min-h-[40px]">
+                  <div className="text-sm font-bold text-gray-800">Max HP</div>
+                  <div className="text-xs text-gray-800">{pokemon.maxHP}</div>
                 </div>
 
-                {/* Special Defense (calculated) */}
-                <div className="text-center flex flex-col justify-center min-h-[60px]">
-                  <div className="text-lg md:text-xl font-bold text-gray-800">Max CP</div>
-                  <div className="text-sm md:text-md text-gray-800">{pokemon.maxCP}</div>
+                <div className="text-center flex flex-col justify-center min-h-[40px]">
+                  <div className="text-sm font-bold text-gray-800">Max CP</div>
+                  <div className="text-xs text-gray-800">{pokemon.maxCP}</div>
                 </div>
-
               </div>
+
+              {/* Attack Information Section */}
+              {pokemon.attacks && (
+                <div>
+                  <h3 className="flex items-center text-md font-semibold text-gray-800 mb-2">
+                    {/* <ImageWithFallback src="/game-icon/sword.svg" width={16} height={16} alt="Sword icon" className="mr-1" priority={false} loading="lazy" />  */}
+                    <span>Attacks</span>
+                  </h3>
+                  <div className="flex flex-col gap-3">
+                    {/* Fast Attacks */}
+                    <div>
+                      <div className="flex items-center mb-1">
+                        <span className="px-2 py-1 bg-red-400 text-white rounded text-xs font-medium">
+                          Fast Attacks
+                        </span>
+                      </div>
+                      <div className="space-y-1">
+                        {pokemon.attacks.fast.slice(0, 2).map((attack: Attack) => (
+                          <div key={attack.name} className="flex justify-between items-center text-xs">
+                            <span className="font-medium text-gray-900">{attack.name}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-gray-600">{attack.type}</span>
+                              <span className="bg-red-600 text-white font-bold px-1 py-0.5 rounded text-xs">
+                                {attack.damage}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Special Attacks */}
+                    <div>
+                      <div className="flex items-center mb-1">
+                        <span className="px-2 py-1 bg-blue-400 text-white rounded text-xs font-medium">
+                          Special Attacks
+                        </span>
+                      </div>
+                      <div className="space-y-1">
+                        {pokemon.attacks.special.slice(0, 2).map((attack: Attack) => (
+                          <div key={attack.name} className="flex justify-between items-center text-xs">
+                            <span className="font-medium text-gray-900">{attack.name}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-gray-600">{attack.type}</span>
+                              <span className="bg-red-600 text-white font-bold px-1 py-0.5 rounded text-xs">
+                                {attack.damage}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -157,112 +208,15 @@ export function PokemonDetails({ pokemon, onEvolutionClick, onBackClick }: Pokem
         </div>
         
         {/* Pokémon Details -  Column Layout */}
-        <div className="flex flex-col md:grid md:grid-cols-2 gap-4">
+        <div className="flex flex-col md:grid md:grid-cols-1 gap-4">
           
-          {/* Column 1: Attacks - Full width on mobile, first column on desktop */}
-          {pokemon.attacks && (
-            <div className="w-full md:col-span-1 flex flex-col items-start border-1 border-white bg-white rounded-md p-3 md:p-1 md:pl-2 min-h-[400px]">
-              <h3 className="flex items-center justify-center text-lg md:text-xl font-bold text-gray-800 p-1 mb-3">
-                <ImageWithFallback src="/game-icon/sword.svg" width={24} height={24} alt="Sword icon" className="mr-1" priority={false} loading="lazy" /> 
-                <span>Attacks</span>
-              </h3>
-              <div className="flex flex-col gap-6 w-full">
-                {/* Fast Attacks Table */}
-                <div className="w-full">
-                  <div className="flex items-center mb-3">
-                    <span className="px-3 py-1 bg-red-400 text-white rounded-md text-sm font-medium">
-                      Fast Attacks
-                    </span>
-                  </div>
-                  <div className="overflow-x-auto min-h-[120px]">
-                    <table className="w-full border-collapse bg-white rounded-lg shadow-sm">
-                      <thead>
-                        <tr className="bg-gray-100">
-                          <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
-                            Attack Name
-                          </th>
-                          <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
-                            Attack Type
-                          </th>
-                          <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
-                            Damage
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {pokemon.attacks.fast.map((attack: Attack, index: number) => (
-                          <tr key={attack.name} className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-                            <td className="px-4 py-2 text-sm font-medium text-gray-900">
-                              {attack.name}
-                            </td>
-                            <td className="px-4 py-2 text-sm text-gray-700">
-                              {attack.type}
-                            </td>
-                            <td className="px-4 py-2 text-sm">
-                              <span className="bg-red-600 text-white font-bold px-2 py-1 rounded-md text-xs">
-                                {attack.damage}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-                {/* Special Attacks Table */}
-                <div className="w-full">
-                  <div className="flex items-center mb-3">
-                    <span className="px-3 py-1 bg-blue-400 text-white rounded-md text-sm font-medium">
-                      Special Attacks
-                    </span>
-                  </div>
-                  <div className="overflow-x-auto min-h-[120px]">
-                    <table className="w-full border-collapse bg-white rounded-lg shadow-sm">
-                      <thead>
-                        <tr className="bg-gray-100">
-                          <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
-                            Attack Name
-                          </th>
-                          <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
-                            Attack Type
-                          </th>
-                          <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
-                            Damage
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {pokemon.attacks.special.map((attack: Attack, index: number) => (
-                          <tr key={attack.name} className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-                            <td className="px-4 py-2 text-sm font-medium text-gray-900">
-                              {attack.name}
-                            </td>
-                            <td className="px-4 py-2 text-sm text-gray-700">
-                              {attack.type}
-                            </td>
-                            <td className="px-4 py-2 text-sm">
-                              <span className="bg-red-600 text-white font-bold px-2 py-1 rounded-md text-xs">
-                                {attack.damage}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Column 2: Resistances, Weaknesses, Evolution - Full width on mobile, second column on desktop */}
-          <div className="w-full md:col-span-1 flex flex-col gap-6 h-auto">
+          {/* Column 1: Resistances and Weaknesses - Full width */}
+          <div className="w-full flex flex-col gap-6 h-auto">
             {/* Resistances */}
             {pokemon.resistant && pokemon.resistant.length > 0 && (
               <div className="border-1 border-white bg-white rounded-md p-3 md:p-3 md:pl-2 h-auto">
                 <h3 className="flex items-center justify-start text-lg md:text-xl font-bold text-gray-800 p-1 mb-3">
-                  <ImageWithFallback src="/game-icon/shield.svg" width={24} height={24} alt="Shield icon" className="mr-1" priority={true} loading="eager" />
+                  {/* <ImageWithFallback src="/game-icon/shield.svg" width={24} height={24} alt="Shield icon" className="mr-1" priority={true} loading="eager" /> */}
                   <span>Resistances</span>
                 </h3>
                 <div className="flex flex-wrap gap-2 h-auto">
@@ -279,12 +233,12 @@ export function PokemonDetails({ pokemon, onEvolutionClick, onBackClick }: Pokem
             {pokemon.weaknesses && pokemon.weaknesses.length > 0 && (
               <div className="border-1 border-white bg-white rounded-md p-3 md:p-3 md:pl-2 h-auto">
                 <h3 className="flex items-center justify-start text-lg md:text-xl font-bold text-gray-800 p-1 mb-3">
-                   <ImageWithFallback src="/game-icon/weak.svg" width={24} height={24} alt="Weakness icon" className="mr-1" priority={true} loading="eager" />
+                   {/* <ImageWithFallback src="/game-icon/weak.svg" width={24} height={24} alt="Weakness icon" className="mr-1" priority={true} loading="eager" /> */}
                    <span>Weaknesses</span>
                  </h3>
                 <div className="flex flex-wrap gap-2 h-auto">
                   {pokemon.weaknesses.map((type: string) => (
-                    <span key={type} className="px-3 py-1 bg-red-500 text-white rounded-md text-sm font-medium">
+                    <span key={type} className="px-3 py-1 bg-gray-400 text-white rounded-md text-sm font-medium">
                       {type}
                     </span>
                   ))}
