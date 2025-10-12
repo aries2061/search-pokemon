@@ -8,6 +8,7 @@ export interface PaginationProps {
 
 export interface PokemonCardProps {
   pokemon: Pokemon;
+  onClick?: (pokemonName: string) => void;
 }
 
 export interface PokemonGridProps {
@@ -16,4 +17,5 @@ export interface PokemonGridProps {
 
 export interface PokemonResultProps {
   pokemonName: string;
+  onPokemonClick?: (pokemonName: string) => void;
 }

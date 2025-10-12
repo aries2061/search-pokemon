@@ -7,8 +7,7 @@ import { Pokemon, Attack } from '@/lib/types';
 import ImageWithFallback from '@/components/ui/ImageWithFallback';
 
 export function PokemonDetails({ pokemon, onEvolutionClick, onBackClick }: PokemonDataProps) {
-  const [backgroundColor, setBackgroundColor] = useState<string>('rgba(200, 200, 200, 0.1)');
-  console.log("Pokemon Data:", pokemon)
+  const backgroundColor = 'rgba(200, 200, 200, 0.1)';
   return (
     <div className="rounded-lg shadow-lg overflow-hidden" style={{ 'backgroundColor': backgroundColor }}>
       <div className="p-3 sm:p-6">
@@ -266,17 +265,17 @@ export function PokemonDetails({ pokemon, onEvolutionClick, onBackClick }: Pokem
               {pokemon.evolutions.map((evolution: Pokemon) => (
                 <div
                   key={evolution.id}
-                  className="flex flex-col items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                  className="flex flex-col items-center p-3 border border-gray-200 rounded-lg bg-white cursor-pointer transition-colors hover:shadow-md"
                   onClick={() => onEvolutionClick(evolution.name)}
                 >
-                  <div className="relative w-20 h-20 mb-2">
+                  <div className="relative w-20 h-20 mb-2 overflow-hidden flex items-center justify-center">
                     {evolution.image && (
                       <ImageWithFallback
                         src={evolution.image || '/icon.svg'}
                         alt={evolution.name}
                         width={80}
                         height={80}
-                        className="object-contain"
+                        className="object-contain max-w-full max-h-full"
                         priority={false}
                         loading="lazy"
                       />

@@ -24,7 +24,7 @@ function PokemonLoading() {
   );
 }
 
-export default function PokemonResult({ pokemonName }: PokemonResultProps) {
+export default function PokemonResult({ pokemonName, onPokemonClick }: PokemonResultProps) {
   const router = useRouter();
   const isOnline = useOnlineStatus();
   const [localPokemon, setLocalPokemon] = useState<Pokemon | null>(null);
@@ -43,7 +43,11 @@ export default function PokemonResult({ pokemonName }: PokemonResultProps) {
   const error = isOnline ? graphqlError : (!localPokemon && !isLocalLoading);
 
   const handleEvolutionClick = (name: string) => {
-    router.replace(`/?search=${encodeURIComponent(name)}`);
+    if (onPokemonClick) {
+      onPokemonClick(name);
+    } else {
+      router.replace(`/?search=${encodeURIComponent(name)}`);
+    }
   };
   
   // Set mounted state after component mounts

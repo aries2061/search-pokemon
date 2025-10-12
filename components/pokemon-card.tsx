@@ -6,9 +6,16 @@ import { Card, CardContent, CardTitle } from '@/components/ui/Card';
 import { PokemonCardProps } from '@/lib/interfaces/components';
 import ImageWithFallback from '@/components/ui/ImageWithFallback';
 
-export default function PokemonCard({ pokemon }: PokemonCardProps) {
+export default function PokemonCard({ pokemon, onClick }: PokemonCardProps) {
+  const handleClick = (e: React.MouseEvent) => {
+    if (onClick) {
+      e.preventDefault();
+      onClick(pokemon.name);
+    }
+  };
+
   return (
-    <Link href={`/?search=${encodeURIComponent(pokemon.name)}`}>
+    <Link href={`/?search=${encodeURIComponent(pokemon.name)}`} onClick={handleClick}>
       <Card className="h-full flex flex-col">
         <div className="flex justify-center flex-grow p-4">
           <ImageWithFallback
@@ -23,16 +30,13 @@ export default function PokemonCard({ pokemon }: PokemonCardProps) {
         </div>
         <CardContent className="text-center mt-auto pt-4 border-t border-gray-100">
           <CardTitle>{pokemon.name}</CardTitle>
-          <div className="flex flex-wrap justify-center gap-1 mt-2">
-            {pokemon.types && pokemon.types.map((type: string) => (
-              <span
-                key={type}
-                className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full text-xs"
-              >
-                {type}
+          {pokemon.classification && (
+            <div className="mt-2">
+              <span className="px-2 py-0.5 bg-green-100 text-green-800 rounded-full text-xs">
+                {pokemon.classification}
               </span>
-            ))}
-          </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </Link>

@@ -9,12 +9,21 @@ export function SearchInput({
   initialValue = '',
   placeholder = 'Search...',
   className = '',
+  value,
+  onChange,
 }: SearchInputProps) {
-  const [query, setQuery] = useState(initialValue);
+  const [query, setQuery] = useState(value !== undefined ? value : initialValue);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
+
+  // Update internal query when controlled value changes
+  useEffect(() => {
+    if (value !== undefined) {
+      setQuery(value);
+    }
+  }, [value]);
 
   useEffect(() => {
     // Update suggestions when query changes
@@ -58,6 +67,11 @@ export function SearchInput({
     const value = e.target.value;
     setQuery(value);
     setShowSuggestions(!!value);
+    
+    // Call onChange if provided (for controlled input)
+    if (onChange) {
+      onChange(value);
+    }
   };
 
   const handleClearSearch = () => {

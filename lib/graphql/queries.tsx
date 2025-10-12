@@ -56,10 +56,7 @@ export const GET_POKEMONS = gql`
       name
       types
       image
-      evolutions {
-        id
-        name
-      }
+      classification
     }
   }
 `;
