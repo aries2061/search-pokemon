@@ -77,14 +77,19 @@ function HomeContent() {
       // This prevents clearing during back navigation
       const currentUrl = window.location.pathname + window.location.search;
       if (currentUrl === '/' || currentUrl === '') {
-        setNavigationHistory([]);
-        // Also clear from localStorage
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('pokemon-navigation-history');
+        // Check if this is a manual navigation to home (not from back button)
+        // We can detect this by checking if the last item in history matches current search
+        const lastHistoryItem = navigationHistory[navigationHistory.length - 1];
+        if (!lastHistoryItem || lastHistoryItem.toLowerCase() !== (searchInputValue || '').toLowerCase()) {
+          setNavigationHistory([]);
+          // Also clear from localStorage
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('pokemon-navigation-history');
+          }
         }
       }
     }
-  }, [searchQuery, isMounted, navigationHistory.length]);
+  }, [searchQuery, isMounted, navigationHistory.length, searchInputValue]);
 
   // On first load, populate localStorage with all Pokémon names if missing
   useEffect(() => {
@@ -143,7 +148,14 @@ function HomeContent() {
     setSearchInputValue(query);
     // Add to navigation history when searching for a Pokemon
     if (query.trim()) {
-      setNavigationHistory(prev => [...prev, query.toLowerCase()]);
+      setNavigationHistory(prev => {
+        const newHistory = [...prev, query.toLowerCase()];
+        // Also update localStorage immediately
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('pokemon-navigation-history', JSON.stringify(newHistory));
+        }
+        return newHistory;
+      });
     }
     router.push(`/?search=${encodeURIComponent(query)}`);
   };
@@ -155,6 +167,10 @@ function HomeContent() {
     setNavigationHistory(prev => {
       const newHistory = [...prev, pokemonName.toLowerCase()];
       console.log('Updated history after click:', newHistory);
+      // Also update localStorage immediately
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('pokemon-navigation-history', JSON.stringify(newHistory));
+      }
       return newHistory;
     });
     router.push(`/?search=${encodeURIComponent(pokemonName)}`);
@@ -163,22 +179,50 @@ function HomeContent() {
   // Handler for back button - pops from navigation history
   const handleBackClick = () => {
     console.log('Back button clicked, current history:', navigationHistory);
+    console.log('History length:', navigationHistory.length);
     
-    if (navigationHistory.length > 1) {
+    // Get the current history from localStorage as a fallback
+    let currentHistory = [...navigationHistory];
+    if (typeof window !== 'undefined') {
+      const savedHistory = localStorage.getItem('pokemon-navigation-history');
+      if (savedHistory) {
+        try {
+          const parsedHistory = JSON.parse(savedHistory);
+          if (parsedHistory.length >= currentHistory.length) {
+            currentHistory = parsedHistory;
+            console.log('Using localStorage history:', currentHistory);
+          }
+        } catch (error) {
+          console.error('Error parsing navigation history from localStorage:', error);
+        }
+      }
+    }
+    
+    if (currentHistory.length > 1) {
       // Remove current Pokemon from history
-      const newHistory = [...navigationHistory];
+      const newHistory = [...currentHistory];
       newHistory.pop();
+      
+      // Update both state and localStorage immediately
       setNavigationHistory(newHistory);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('pokemon-navigation-history', JSON.stringify(newHistory));
+      }
       
       // Get the previous Pokemon name
       const previousPokemon = newHistory[newHistory.length - 1];
       console.log('Navigating back to:', previousPokemon);
+      console.log('New history after back:', newHistory);
       setSearchInputValue(previousPokemon);
       router.push(`/?search=${encodeURIComponent(previousPokemon)}`);
     } else {
       console.log('No history available, going to home page');
       // If no history, go to home page
       setNavigationHistory([]);
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('pokemon-navigation-history');
+      }
+      setSearchInputValue('');
       router.push('/');
     }
   };
@@ -197,6 +241,10 @@ function HomeContent() {
     setNavigationHistory(prev => {
       const newHistory = [...prev, pokemonName.toLowerCase()];
       console.log('Updated history after evolution click:', newHistory);
+      // Also update localStorage immediately
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('pokemon-navigation-history', JSON.stringify(newHistory));
+      }
       return newHistory;
     });
     router.push(`/?search=${encodeURIComponent(pokemonName)}`);

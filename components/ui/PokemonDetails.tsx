@@ -51,8 +51,15 @@ export function PokemonDetails({ pokemon, onEvolutionClick, onBackClick }: Pokem
                     <span>Evolution Requirement</span>
                   </h3>
                   <div className="bg-gray-100 rounded-lg p-3">
-                    <p className="text-sm text-amber-600 font-medium">
-                      {pokemon.evolutionRequirements.name}: {pokemon.evolutionRequirements.amount}
+                    <p className="text-sm text-gray-800 font-medium flex items-center gap-2">
+                      {pokemon.evolutionRequirements.name}: 
+                      <span
+                        key={pokemon.evolutionRequirements.amount}
+                        className="px-2 py-1 bg-blue-600 text-white font-bold rounded-full text-xs inline-flex items-center gap-1"
+                      >
+                        <label className="w-2 h-2 bg-blue-300 rounded-full"></label>
+                        {pokemon.evolutionRequirements.amount}
+                      </span>
                     </p>
                   </div>
                 </div>
