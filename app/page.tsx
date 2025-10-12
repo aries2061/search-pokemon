@@ -260,7 +260,34 @@ function HomeContent() {
   return (
     <main className="min-h-screen p-2 md:p-8 bg-white sm:bg-transparent">
       <div className="max-w-4xl mx-auto bg-white p-1 rounded-xl sm:p-5 sm:rounded-2xl sm:shadow-sm sm:shadow-amber-200">
-        <div className="flex justify-between text-center mb-4">
+        {/* Mobile layout: Logo centered, SearchInput below */}
+        <div className="flex flex-col items-center text-center mb-4 sm:hidden">
+          <div className="mb-4">
+            <Link href="/" onClick={handleLogoClick}>
+              <Image 
+                src="/pokemon-logo.png" 
+                alt="Pokemon Logo" 
+                width={160} 
+                height={100} 
+                priority
+                fetchPriority="high"
+                style={{ height: 'auto', cursor: 'pointer' }}
+              />
+            </Link>
+          </div>
+          <div className="w-full max-w-sm">
+            <SearchInput 
+              onSearch={handleSearch} 
+              initialValue={searchQuery} 
+              placeholder="Search a Pokémon..." 
+              value={searchInputValue}
+              onChange={setSearchInputValue}
+            />
+          </div>
+        </div>
+
+        {/* Desktop layout: Logo left, SearchInput right */}
+        <div className="hidden sm:flex justify-between text-center mb-4">
           <div>
             <Link href="/" onClick={handleLogoClick}>
               <Image 
