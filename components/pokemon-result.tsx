@@ -17,7 +17,7 @@ const PokemonDetails = lazy(() => import('@/components/ui/PokemonDetails').then(
 // Import the skeleton component
 import { PokemonDetailsSkeleton } from '@/components/ui/PokemonDetailsSkeleton';
 
-export default function PokemonResult({ pokemonName, onPokemonClick }: PokemonResultProps) {
+export default function PokemonResult({ pokemonName, onPokemonClick, onBackClick }: PokemonResultProps) {
   const router = useRouter();
   const isOnline = useOnlineStatus();
   const [localPokemon, setLocalPokemon] = useState<Pokemon | null>(null);
@@ -143,7 +143,11 @@ export default function PokemonResult({ pokemonName, onPokemonClick }: PokemonRe
   // If we're offline and have local data, use that
   if (!isOnline && localPokemon) {
     const handleBackClick = () => {
-      router.replace('/');
+      if (onBackClick) {
+        onBackClick();
+      } else {
+        router.replace('/');
+      }
     };
     
     return (
@@ -169,7 +173,11 @@ export default function PokemonResult({ pokemonName, onPokemonClick }: PokemonRe
   const pokemon = isOnline ? data?.pokemon : localPokemon;
   
   const handleBackClick = () => {
-    router.replace('/');
+    if (onBackClick) {
+      onBackClick();
+    } else {
+      router.replace('/');
+    }
   };
 
   // Render the Pokemon data with Suspense

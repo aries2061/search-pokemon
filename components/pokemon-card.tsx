@@ -17,7 +17,7 @@ export default function PokemonCard({ pokemon, onClick }: PokemonCardProps) {
   return (
     <Link href={`/?search=${encodeURIComponent(pokemon.name)}`} onClick={handleClick}>
       <Card className="h-full flex flex-col">
-        <div className="flex justify-center flex-grow p-4" style={{ aspectRatio: '1/1.2' }}>
+        <div className="flex justify-center flex-grow p-4 hover:-translate-y-2.5 transition-transform duration-200 ease-in-out" style={{ aspectRatio: '1/1.2' }}>
           <ImageWithFallback
             src={pokemon.compressedImage || pokemon.image || '/icon.svg'}
             alt={pokemon.name}

@@ -209,15 +209,15 @@ export function PokemonDetails({ pokemon, onEvolutionClick, onBackClick }: Pokem
           )}
 
           {/* Column 2: Resistances, Weaknesses, Evolution - Full width on mobile, second column on desktop */}
-          <div className="w-full md:col-span-1 flex flex-col gap-6 min-h-[400px]">
+          <div className="w-full md:col-span-1 flex flex-col gap-6 h-auto">
             {/* Resistances */}
             {pokemon.resistant && pokemon.resistant.length > 0 && (
-              <div className="border-1 border-white bg-white rounded-md p-3 md:p-1 md:pl-2 min-h-[150px]">
-                <h3 className="flex items-center justify-center text-lg md:text-xl font-bold text-gray-800 p-1 mb-3">
+              <div className="border-1 border-white bg-white rounded-md p-3 md:p-3 md:pl-2 h-auto">
+                <h3 className="flex items-center justify-start text-lg md:text-xl font-bold text-gray-800 p-1 mb-3">
                   <ImageWithFallback src="/game-icon/shield.svg" width={24} height={24} alt="Shield icon" className="mr-1" priority={true} loading="eager" />
                   <span>Resistances</span>
                 </h3>
-                <div className="flex flex-wrap gap-2 min-h-[60px]">
+                <div className="flex flex-wrap gap-2 h-auto">
                   {pokemon.resistant.map((type: string) => (
                     <span key={type} className="px-3 py-1 bg-green-500 text-white rounded-md text-sm font-medium">
                       {type}
@@ -229,12 +229,12 @@ export function PokemonDetails({ pokemon, onEvolutionClick, onBackClick }: Pokem
 
             {/* Weaknesses */}
             {pokemon.weaknesses && pokemon.weaknesses.length > 0 && (
-              <div className="border-1 border-white bg-white rounded-md p-3 md:p-1 md:pl-2 min-h-[150px]">
-                <h3 className="flex items-center justify-center text-lg md:text-xl font-bold text-gray-800 p-1 mb-3">
+              <div className="border-1 border-white bg-white rounded-md p-3 md:p-3 md:pl-2 h-auto">
+                <h3 className="flex items-center justify-start text-lg md:text-xl font-bold text-gray-800 p-1 mb-3">
                    <ImageWithFallback src="/game-icon/weak.svg" width={24} height={24} alt="Weakness icon" className="mr-1" priority={true} loading="eager" />
                    <span>Weaknesses</span>
                  </h3>
-                <div className="flex flex-wrap gap-2 min-h-[60px]">
+                <div className="flex flex-wrap gap-2 h-auto">
                   {pokemon.weaknesses.map((type: string) => (
                     <span key={type} className="px-3 py-1 bg-red-500 text-white rounded-md text-sm font-medium">
                       {type}
@@ -243,6 +243,40 @@ export function PokemonDetails({ pokemon, onEvolutionClick, onBackClick }: Pokem
                 </div>
               </div>
             )}
+
+            {/* Evolution */}
+            {
+              pokemon.evolutions && pokemon.evolutions.length > 0 && (
+                <div className="border-1 border-white bg-white rounded-md p-3 md:p-3 md:pl-2 h-auto">
+                  <h3 className="flex items-center text-lg md:text-xl font-bold text-gray-800 mb-3">
+                    <ImageWithFallback src="/game-icon/evolution.svg" width={22} height={22} alt="Evolution icon" className="mr-2" priority={false} loading="lazy" />
+                    <span>Evolutions</span>
+                  </h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 min-h-[120px]">
+                    {
+                      pokemon.evolutions.map((evolution: Pokemon) => (
+                        <div key={evolution.id} className="flex flex-col items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer" onClick={() => onEvolutionClick(evolution.name)}>
+                          <div className="w-16 h-16 mb-2 relative hover:-translate-y-1 transition-transform duration-200 ease-in-out" style={{ aspectRatio: '1/1' }}>
+                            <ImageWithFallback
+                              src={evolution.image || '/icon.svg'}
+                              alt={evolution.name}
+                              className="w-full h-full object-contain rounded-lg"
+                              width={64}
+                              height={64}
+                              priority={false}
+                              loading="lazy"
+                            />
+                          </div>
+                          <span className="text-sm font-medium text-gray-700 text-center">
+                            {evolution.name}
+                          </span>
+                        </div>
+                      ))
+                    }
+                  </div>
+              </div>
+              )
+            }
           </div>
         </div>
 
@@ -263,36 +297,7 @@ export function PokemonDetails({ pokemon, onEvolutionClick, onBackClick }: Pokem
                 </div>
               </div>
             )}
-
-            {/* Evolutions */}
-            {pokemon.evolutions && pokemon.evolutions.length > 0 && (
-              <div>
-                <h3 className="flex items-center text-lg md:text-xl font-bold text-gray-800 mb-3">
-                  <ImageWithFallback src="/game-icon/evolution.svg" width={24} height={24} alt="Evolution icon" className="mr-2" priority={false} loading="lazy" />
-                  <span>Evolutions</span>
-                </h3>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 min-h-[120px]">
-                  {pokemon.evolutions.map((evolution: Pokemon) => (
-                    <div key={evolution.id} className="flex flex-col items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer" onClick={() => onEvolutionClick(evolution.name)}>
-                      <div className="w-16 h-16 mb-2 relative" style={{ aspectRatio: '1/1' }}>
-                        <ImageWithFallback
-                          src={evolution.image || '/icon.svg'}
-                          alt={evolution.name}
-                          className="w-full h-full object-contain rounded-lg"
-                          width={64}
-                          height={64}
-                          priority={false}
-                          loading="lazy"
-                        />
-                      </div>
-                      <span className="text-sm font-medium text-gray-700 text-center">
-                        {evolution.name}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            
           </div>
         )}
       </div>

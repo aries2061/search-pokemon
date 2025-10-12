@@ -1,6 +1,6 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useState, useEffect, Suspense, lazy } from 'react';
 import { useQuery } from '@apollo/client/react';
 import Image from 'next/image';
@@ -9,7 +9,6 @@ import Pagination from '@/components/pagination';
 import SkeletonGrid from '@/components/ui/SkeletonGrid';
 import { Pokemon } from '@/lib/types';
 import { GET_POKEMONS } from '@/lib/graphql/queries';
-import { initPerformanceMonitoring, trackInteraction } from '@/lib/performance';
 import Link from 'next/link';
 
 // Lazy load the PokemonResult component for code splitting
@@ -17,6 +16,7 @@ const PokemonResult = lazy(() => import('@/components/pokemon-result'));
 
 function HomeContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const searchQuery = searchParams.get('search') || '';
   
   const [currentPage, setCurrentPage] = useState(1);
@@ -27,6 +27,31 @@ function HomeContent() {
   const [allPokemons, setAllPokemons] = useState<Pokemon[]>([]);
   const [totalPokemonCount, setTotalPokemonCount] = useState(0);
   const [searchInputValue, setSearchInputValue] = useState(searchQuery);
+  
+  // Navigation history state - stack of Pokemon names with localStorage persistence
+  const [navigationHistory, setNavigationHistory] = useState<string[]>([]);
+
+  // Load navigation history from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedHistory = localStorage.getItem('pokemon-navigation-history');
+      if (savedHistory) {
+        try {
+          const parsedHistory = JSON.parse(savedHistory);
+          setNavigationHistory(parsedHistory);
+        } catch (error) {
+          console.error('Error parsing navigation history from localStorage:', error);
+        }
+      }
+    }
+  }, []);
+
+  // Save navigation history to localStorage whenever it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined' && navigationHistory.length > 0) {
+      localStorage.setItem('pokemon-navigation-history', JSON.stringify(navigationHistory));
+    }
+  }, [navigationHistory]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -44,6 +69,22 @@ function HomeContent() {
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  // Clear navigation history only when manually navigating to home page (no search query)
+  useEffect(() => {
+    if (!searchQuery && isMounted && navigationHistory.length > 0) {
+      // Only clear if we're actually on the home page and have history
+      // This prevents clearing during back navigation
+      const currentUrl = window.location.pathname + window.location.search;
+      if (currentUrl === '/' || currentUrl === '') {
+        setNavigationHistory([]);
+        // Also clear from localStorage
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('pokemon-navigation-history');
+        }
+      }
+    }
+  }, [searchQuery, isMounted, navigationHistory.length]);
 
   // On first load, populate localStorage with all Pokémon names if missing
   useEffect(() => {
@@ -100,18 +141,65 @@ function HomeContent() {
 
   const handleSearch = (query: string) => {
     setSearchInputValue(query);
-    window.location.href = `/?search=${encodeURIComponent(query)}`;
+    // Add to navigation history when searching for a Pokemon
+    if (query.trim()) {
+      setNavigationHistory(prev => [...prev, query.toLowerCase()]);
+    }
+    router.push(`/?search=${encodeURIComponent(query)}`);
   };
 
-  useEffect(() => {
-    // Initialize performance monitoring
-    initPerformanceMonitoring();
-  }, []);
-
   const handlePokemonClick = (pokemonName: string) => {
-    trackInteraction('pokemon_click', pokemonName);
+    console.log('Pokemon clicked:', pokemonName, 'Current history:', navigationHistory);
     setSearchInputValue(pokemonName);
-    window.location.href = `/?search=${encodeURIComponent(pokemonName)}`;
+    // Add to navigation history when clicking a Pokemon
+    setNavigationHistory(prev => {
+      const newHistory = [...prev, pokemonName.toLowerCase()];
+      console.log('Updated history after click:', newHistory);
+      return newHistory;
+    });
+    router.push(`/?search=${encodeURIComponent(pokemonName)}`);
+  };
+
+  // Handler for back button - pops from navigation history
+  const handleBackClick = () => {
+    console.log('Back button clicked, current history:', navigationHistory);
+    
+    if (navigationHistory.length > 1) {
+      // Remove current Pokemon from history
+      const newHistory = [...navigationHistory];
+      newHistory.pop();
+      setNavigationHistory(newHistory);
+      
+      // Get the previous Pokemon name
+      const previousPokemon = newHistory[newHistory.length - 1];
+      console.log('Navigating back to:', previousPokemon);
+      setSearchInputValue(previousPokemon);
+      router.push(`/?search=${encodeURIComponent(previousPokemon)}`);
+    } else {
+      console.log('No history available, going to home page');
+      // If no history, go to home page
+      setNavigationHistory([]);
+      router.push('/');
+    }
+  };
+
+  // Handler for Pokemon logo click - clears navigation history
+  const handleLogoClick = () => {
+    setNavigationHistory([]);
+    setSearchInputValue('');
+  };
+
+  // Handler for evolution clicks - also adds to navigation history
+  const handleEvolutionClick = (pokemonName: string) => {
+    console.log('Evolution clicked:', pokemonName, 'Current history:', navigationHistory);
+    setSearchInputValue(pokemonName);
+    // Add to navigation history when clicking an evolution
+    setNavigationHistory(prev => {
+      const newHistory = [...prev, pokemonName.toLowerCase()];
+      console.log('Updated history after evolution click:', newHistory);
+      return newHistory;
+    });
+    router.push(`/?search=${encodeURIComponent(pokemonName)}`);
   };
 
   // Get current page of Pokemon for display
@@ -126,15 +214,17 @@ function HomeContent() {
       <div className="max-w-4xl mx-auto bg-white p-1 rounded-xl sm:p-5 sm:rounded-2xl sm:shadow-sm sm:shadow-amber-200">
         <div className="flex justify-between text-center mb-4">
           <div>
-            <Image 
-              src="/pokemon-logo.png" 
-              alt="Pokemon Logo" 
-              width={140} 
-              height={80} 
-              priority
-              fetchPriority="high"
-              style={{ height: 'auto' }}
-            />
+            <Link href="/" onClick={handleLogoClick}>
+              <Image 
+                src="/pokemon-logo.png" 
+                alt="Pokemon Logo" 
+                width={140} 
+                height={80} 
+                priority
+                fetchPriority="high"
+                style={{ height: 'auto', cursor: 'pointer' }}
+              />
+            </Link>
           </div>
           <div className='justify-end'>
             <SearchInput 
@@ -150,7 +240,7 @@ function HomeContent() {
         {searchQuery ? (
           <div className="mt-8">
             <Suspense fallback={<div className="text-center p-8"><p className="text-gray-500">Loading search results...</p></div>}>
-              <PokemonResult pokemonName={searchQuery} onPokemonClick={handlePokemonClick} />
+              <PokemonResult pokemonName={searchQuery} onPokemonClick={handleEvolutionClick} onBackClick={handleBackClick} />
             </Suspense>
           </div>
         ) : (
@@ -228,18 +318,27 @@ function HomeContent() {
 }
 
 function LoadingFallback() {
+  // Handler for Pokemon logo click in loading fallback - clears navigation history
+  const handleLogoClick = () => {
+    // Since this is in LoadingFallback, we can't access the state directly
+    // The navigation will clear the history when going to home page
+  };
+
   return (
     <main className="min-h-screen p-2 md:p-8 bg-white sm:bg-transparent">
       <div className="max-w-4xl mx-auto bg-white p-2 rounded-xl sm:p-7 sm:rounded-2xl sm:shadow-sm sm:shadow-amber-200">
         <div className="text-center mb-4">
           <div className="flex justify-center mb-4">
-            <Image 
-              src="/pokemon-logo.png" 
-              alt="Pokemon Logo" 
-              width={250} 
-              height={110} 
-              priority
-            />
+            <Link href="/" onClick={handleLogoClick}>
+              <Image 
+                src="/pokemon-logo.png" 
+                alt="Pokemon Logo" 
+                width={250} 
+                height={110} 
+                priority
+                style={{ cursor: 'pointer' }}
+              />
+            </Link>
           </div>
           <p className="text-gray-500 bold text-md sm:text-lg mb-12">
             Loading...
