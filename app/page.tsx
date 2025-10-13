@@ -258,8 +258,8 @@ function HomeContent() {
   };
 
   return (
-    <main className="min-h-screen p-2 md:p-8 bg-white sm:bg-transparent">
-      <div className="max-w-4xl mx-auto bg-white p-1 rounded-xl sm:p-5 sm:rounded-2xl sm:shadow-sm sm:shadow-amber-200">
+    <main className="min-h-screen p-0 sm:p-2 md:p-8 bg-white sm:bg-transparent">
+      <div className="w-full sm:max-w-4xl mx-auto bg-white p-1 rounded-xl sm:p-5 sm:rounded-2xl sm:shadow-sm sm:shadow-amber-200">
         {/* Mobile layout: Logo centered, SearchInput below */}
         <div className="flex flex-col items-center text-center mb-4 sm:hidden">
           <div className="mb-4">
