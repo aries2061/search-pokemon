@@ -161,12 +161,12 @@ function HomeContent() {
   };
 
   const handlePokemonClick = (pokemonName: string) => {
-    console.log('Pokemon clicked:', pokemonName, 'Current history:', navigationHistory);
+    //console.log('Pokemon clicked:', pokemonName, 'Current history:', navigationHistory);
     setSearchInputValue(pokemonName);
     // Add to navigation history when clicking a Pokemon
     setNavigationHistory(prev => {
       const newHistory = [...prev, pokemonName.toLowerCase()];
-      console.log('Updated history after click:', newHistory);
+      //console.log('Updated history after click:', newHistory);
       // Also update localStorage immediately
       if (typeof window !== 'undefined') {
         localStorage.setItem('pokemon-navigation-history', JSON.stringify(newHistory));
@@ -178,8 +178,8 @@ function HomeContent() {
 
   // Handler for back button - pops from navigation history
   const handleBackClick = () => {
-    console.log('Back button clicked, current history:', navigationHistory);
-    console.log('History length:', navigationHistory.length);
+    //console.log('Back button clicked, current history:', navigationHistory);
+    //console.log('History length:', navigationHistory.length);
     
     // Get the current history from localStorage as a fallback
     let currentHistory = [...navigationHistory];
@@ -190,7 +190,7 @@ function HomeContent() {
           const parsedHistory = JSON.parse(savedHistory);
           if (parsedHistory.length >= currentHistory.length) {
             currentHistory = parsedHistory;
-            console.log('Using localStorage history:', currentHistory);
+            //console.log('Using localStorage history:', currentHistory);
           }
         } catch (error) {
           console.error('Error parsing navigation history from localStorage:', error);
@@ -211,12 +211,12 @@ function HomeContent() {
       
       // Get the previous Pokemon name
       const previousPokemon = newHistory[newHistory.length - 1];
-      console.log('Navigating back to:', previousPokemon);
-      console.log('New history after back:', newHistory);
+      //console.log('Navigating back to:', previousPokemon);
+      //console.log('New history after back:', newHistory);
       setSearchInputValue(previousPokemon);
       router.push(`/?search=${encodeURIComponent(previousPokemon)}`);
     } else {
-      console.log('No history available, going to home page');
+      //console.log('No history available, going to home page');
       // If no history, go to home page
       setNavigationHistory([]);
       if (typeof window !== 'undefined') {
@@ -235,12 +235,12 @@ function HomeContent() {
 
   // Handler for evolution clicks - also adds to navigation history
   const handleEvolutionClick = (pokemonName: string) => {
-    console.log('Evolution clicked:', pokemonName, 'Current history:', navigationHistory);
+    //console.log('Evolution clicked:', pokemonName, 'Current history:', navigationHistory);
     setSearchInputValue(pokemonName);
     // Add to navigation history when clicking an evolution
     setNavigationHistory(prev => {
       const newHistory = [...prev, pokemonName.toLowerCase()];
-      console.log('Updated history after evolution click:', newHistory);
+      //console.log('Updated history after evolution click:', newHistory);
       // Also update localStorage immediately
       if (typeof window !== 'undefined') {
         localStorage.setItem('pokemon-navigation-history', JSON.stringify(newHistory));
