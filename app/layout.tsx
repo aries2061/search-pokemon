@@ -50,6 +50,7 @@ export default function RootLayout({
           backgroundRepeat: "no-repeat",
           backgroundSize: "cover",
           backgroundPosition: "center",
+          backgroundAttachment: "fixed",
           minHeight: "100vh"
         }}
         suppressHydrationWarning={true}
