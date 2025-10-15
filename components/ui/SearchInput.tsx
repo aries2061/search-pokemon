@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useEffect, FormEvent, useRef } from 'react';
+import React, { useState, useEffect, FormEvent, useRef, useCallback } from 'react';
 import { SearchInputProps } from '../../lib/interfaces/ui';
 import { getSuggestions } from '../../lib/pokemonSearchUtils';
 
-export function SearchInput({
+export const SearchInput = React.memo(function SearchInput({
   onSearch,
   initialValue = '',
   placeholder = 'Search...',
@@ -35,55 +35,71 @@ export function SearchInput({
     }
   }, [query]);
 
+  // Use useCallback for stable function references
+  const handleClickOutside = useCallback((event: MouseEvent) => {
+    if (
+      suggestionsRef.current && 
+      !suggestionsRef.current.contains(event.target as Node) &&
+      inputRef.current && 
+      !inputRef.current.contains(event.target as Node)
+    ) {
+      setShowSuggestions(false);
+    }
+  }, []);
+
   useEffect(() => {
     // Handle clicks outside the suggestions dropdown
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        suggestionsRef.current && 
-        !suggestionsRef.current.contains(event.target as Node) &&
-        inputRef.current && 
-        !inputRef.current.contains(event.target as Node)
-      ) {
-        setShowSuggestions(false);
-      }
-    };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, []);
+  }, [handleClickOutside]);
 
-  const handleSubmit = (e: FormEvent) => {
+  // Use useCallback for event handlers
+  const handleSubmit = useCallback((e: FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
       onSearch(query.trim());
-      // We don't save the name here - it will be saved only when a result is found
       setShowSuggestions(false);
     }
-  };
+  }, [query, onSearch]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setQuery(value);
-    setShowSuggestions(!!value);
-    
-    // Call onChange if provided (for controlled input)
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setQuery(newValue);
     if (onChange) {
-      onChange(value);
+      onChange(newValue);
     }
-  };
+    setShowSuggestions(true);
+  }, [onChange]);
 
-  const handleClearSearch = () => {
-    setQuery('');
-  };
-
-  const handleSuggestionClick = (suggestion: string) => {
+  const handleSuggestionClick = useCallback((suggestion: string) => {
     setQuery(suggestion);
+    if (onChange) {
+      onChange(suggestion);
+    }
     onSearch(suggestion);
-    // We don't save the name here - it will be saved only when a result is found
     setShowSuggestions(false);
-  };
+  }, [onChange, onSearch]);
+
+  const handleInputFocus = useCallback(() => {
+    if (suggestions.length > 0) {
+      setShowSuggestions(true);
+    }
+  }, [suggestions.length]);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      setShowSuggestions(false);
+    }
+  }, []);
+
+  const handleClearSearch = useCallback(() => {
+    setQuery('');
+    if (onChange) {
+      onChange('');
+    }
+  }, [onChange]);
 
   return (
     <div className="relative w-full max-w-md mx-auto">
@@ -93,7 +109,8 @@ export function SearchInput({
           type="text"
           value={query}
           onChange={handleInputChange}
-          onFocus={() => query.trim() && setShowSuggestions(true)}
+          onFocus={handleInputFocus}
+          onKeyDown={handleKeyDown}
           placeholder={placeholder}
           className="w-full px-4 py-2 border-3 border-blue-400 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
           aria-label="Search"
@@ -153,4 +170,4 @@ export function SearchInput({
       )}
     </div>
   );
-}
+});

@@ -17,7 +17,7 @@ interface ImageWithFallbackProps {
   fetchPriority?: 'high' | 'low' | 'auto';
 }
 
-export default function ImageWithFallback({
+function ImageWithFallback({
   src,
   alt,
   width,
@@ -62,3 +62,6 @@ export default function ImageWithFallback({
     />
   );
 }
+
+// Memoize the component to prevent unnecessary re-renders
+export default React.memo(ImageWithFallback);

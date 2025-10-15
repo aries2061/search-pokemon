@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useState, useEffect, Suspense, lazy } from 'react';
+import { useState, useEffect, Suspense, lazy, useMemo, useCallback } from 'react';
 import { useQuery } from '@apollo/client/react';
 import Image from 'next/image';
 import { SearchInput } from '@/components/ui/SearchInput';
@@ -31,6 +31,30 @@ function HomeContent() {
   // Navigation history state - stack of Pokemon names with localStorage persistence
   const [navigationHistory, setNavigationHistory] = useState<string[]>([]);
 
+  // Fetch all Pokemon data after component mounts - MOVED TO TOP
+  const { data: allPokemonsData } = useQuery<{ pokemons: Pokemon[] }>(GET_POKEMONS, {
+    variables: { first: 1000 }, // Fetch a large number to get all Pokemon
+    skip: !isMounted,
+  });
+
+  // Fetch Pokémon names only when needed for search suggestions - MOVED TO TOP
+  const { data: pokemonNamesData } = useQuery<{ pokemons: { name: string }[] }>(GET_POKEMONS, {
+    variables: { first: 200 },
+    skip: !shouldFetchNames,
+  });
+
+  // Memoize expensive calculations
+  const currentPagePokemons = useMemo(() => {
+    const startIndex = (currentPage - 1) * POKEMON_PER_PAGE;
+    const endIndex = startIndex + POKEMON_PER_PAGE;
+    return allPokemons.slice(startIndex, endIndex);
+  }, [allPokemons, currentPage, POKEMON_PER_PAGE]);
+
+  // Memoize total pages calculation
+  const calculatedTotalPages = useMemo(() => {
+    return Math.ceil(allPokemons.length / POKEMON_PER_PAGE);
+  }, [allPokemons.length, POKEMON_PER_PAGE]);
+
   // Load navigation history from localStorage on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -53,9 +77,10 @@ function HomeContent() {
     }
   }, [navigationHistory]);
 
-  const handlePageChange = (page: number) => {
+  // Use useCallback for stable function references
+  const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);
-  };
+  }, []);
 
   // Client-side caching implementation
   useEffect(() => {
@@ -105,12 +130,6 @@ function HomeContent() {
     }
   }, [isMounted]);
 
-  // Fetch all Pokemon data after component mounts
-  const { data: allPokemonsData } = useQuery<{ pokemons: Pokemon[] }>(GET_POKEMONS, {
-    variables: { first: 1000 }, // Fetch a large number to get all Pokemon
-    skip: !isMounted,
-  });
-
   // Process all Pokemon data
   useEffect(() => {
     if (!allPokemonsData?.pokemons || !isMounted) return;
@@ -118,14 +137,8 @@ function HomeContent() {
     const pokemonData = allPokemonsData.pokemons;
     setAllPokemons(pokemonData);
     setTotalPokemonCount(pokemonData.length);
-    setTotalPages(Math.ceil(pokemonData.length / POKEMON_PER_PAGE));
-  }, [allPokemonsData, isMounted]);
-
-  // Fetch Pokémon names only when needed for search suggestions
-  const { data: pokemonNamesData } = useQuery<{ pokemons: { name: string }[] }>(GET_POKEMONS, {
-    variables: { first: 200 },
-    skip: !shouldFetchNames,
-  });
+    setTotalPages(calculatedTotalPages);
+  }, [allPokemonsData, isMounted, calculatedTotalPages]);
 
   // Persist fetched names to localStorage for search suggestion
   useEffect(() => {
@@ -144,7 +157,7 @@ function HomeContent() {
   // Load recent searches from localStorage - removed as it's not being used
   // This functionality can be re-added later if needed
 
-  const handleSearch = (query: string) => {
+  const handleSearch = useCallback((query: string) => {
     setSearchInputValue(query);
     // Add to navigation history when searching for a Pokemon
     if (query.trim()) {
@@ -158,9 +171,9 @@ function HomeContent() {
       });
     }
     router.push(`/?search=${encodeURIComponent(query)}`);
-  };
+  }, [router]);
 
-  const handlePokemonClick = (pokemonName: string) => {
+  const handlePokemonClick = useCallback((pokemonName: string) => {
     //console.log('Pokemon clicked:', pokemonName, 'Current history:', navigationHistory);
     setSearchInputValue(pokemonName);
     // Add to navigation history when clicking a Pokemon
@@ -174,10 +187,10 @@ function HomeContent() {
       return newHistory;
     });
     router.push(`/?search=${encodeURIComponent(pokemonName)}`);
-  };
+  }, [router]);
 
   // Handler for back button - pops from navigation history
-  const handleBackClick = () => {
+  const handleBackClick = useCallback(() => {
     //console.log('Back button clicked, current history:', navigationHistory);
     //console.log('History length:', navigationHistory.length);
     
@@ -225,16 +238,16 @@ function HomeContent() {
       setSearchInputValue('');
       router.push('/');
     }
-  };
+  }, [navigationHistory, router]);
 
   // Handler for Pokemon logo click - clears navigation history
-  const handleLogoClick = () => {
+  const handleLogoClick = useCallback(() => {
     setNavigationHistory([]);
     setSearchInputValue('');
-  };
+  }, []);
 
   // Handler for evolution clicks - also adds to navigation history
-  const handleEvolutionClick = (pokemonName: string) => {
+  const handleEvolutionClick = useCallback((pokemonName: string) => {
     //console.log('Evolution clicked:', pokemonName, 'Current history:', navigationHistory);
     setSearchInputValue(pokemonName);
     // Add to navigation history when clicking an evolution
@@ -248,14 +261,14 @@ function HomeContent() {
       return newHistory;
     });
     router.push(`/?search=${encodeURIComponent(pokemonName)}`);
-  };
+  }, [router]);
 
   // Get current page of Pokemon for display
-  const getCurrentPagePokemons = () => {
+  const getCurrentPagePokemons = useCallback(() => {
     const startIndex = (currentPage - 1) * POKEMON_PER_PAGE;
     const endIndex = startIndex + POKEMON_PER_PAGE;
     return allPokemons.slice(startIndex, endIndex);
-  };
+  }, [currentPage, allPokemons]);
 
   return (
     <main className="min-h-screen p-0 sm:p-2 md:p-8 bg-white sm:bg-transparent">

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import React, { useState, useEffect, Suspense, lazy, useMemo, useCallback } from 'react';
 import { useQuery } from '@apollo/client/react';
 import { useRouter } from 'next/navigation';
 import { GET_POKEMON } from '@/lib/graphql/queries';
@@ -17,7 +17,7 @@ const PokemonDetails = lazy(() => import('@/components/ui/PokemonDetails').then(
 // Import the skeleton component
 import { PokemonDetailsSkeleton } from '@/components/ui/PokemonDetailsSkeleton';
 
-export default function PokemonResult({ pokemonName, onPokemonClick, onBackClick }: PokemonResultProps) {
+function PokemonResult({ pokemonName, onPokemonClick, onBackClick }: PokemonResultProps) {
   const router = useRouter();
   const isOnline = useOnlineStatus();
   const [localPokemon, setLocalPokemon] = useState<Pokemon | null>(null);
@@ -30,18 +30,33 @@ export default function PokemonResult({ pokemonName, onPokemonClick, onBackClick
     skip: !pokemonName || !isOnline,
   });
 
-  // Combined loading state - show loading if either local or GraphQL is loading
-  const loading = isLocalLoading || (isOnline && graphqlLoading);
-  // Combined error state
-  const error = isOnline ? graphqlError : (!localPokemon && !isLocalLoading);
-
-  const handleEvolutionClick = (name: string) => {
+  // ALL HOOKS MUST BE AT THE TOP LEVEL - MOVED HERE
+  const handleEvolutionClick = useCallback((name: string) => {
     if (onPokemonClick) {
       onPokemonClick(name);
     } else {
       router.replace(`/?search=${encodeURIComponent(name)}`);
     }
-  };
+  }, [onPokemonClick, router]);
+
+  // Memoize the handleBackClick function - MOVED TO TOP
+  const handleBackClick = useCallback(() => {
+    if (onBackClick) {
+      onBackClick();
+    } else {
+      router.replace('/');
+    }
+  }, [onBackClick, router]);
+
+  // Memoize the pokemon data selection - MOVED TO TOP
+  const pokemon = useMemo(() => {
+    return isOnline ? data?.pokemon : localPokemon;
+  }, [isOnline, data?.pokemon, localPokemon]);
+
+  // Combined loading state - show loading if either local or GraphQL is loading
+  const loading = isLocalLoading || (isOnline && graphqlLoading);
+  // Combined error state
+  const error = isOnline ? graphqlError : (!localPokemon && !isLocalLoading);
   
   // Set mounted state after component mounts
   useEffect(() => {
@@ -142,14 +157,6 @@ export default function PokemonResult({ pokemonName, onPokemonClick, onBackClick
 
   // If we're offline and have local data, use that
   if (!isOnline && localPokemon) {
-    const handleBackClick = () => {
-      if (onBackClick) {
-        onBackClick();
-      } else {
-        router.replace('/');
-      }
-    };
-    
     return (
       <Suspense fallback={<PokemonDetailsSkeleton />}>
         <PokemonDetails 
@@ -169,17 +176,6 @@ export default function PokemonResult({ pokemonName, onPokemonClick, onBackClick
     );
   }
 
-  // If we're online and have data from GraphQL
-  const pokemon = isOnline ? data?.pokemon : localPokemon;
-  
-  const handleBackClick = () => {
-    if (onBackClick) {
-      onBackClick();
-    } else {
-      router.replace('/');
-    }
-  };
-
   // Render the Pokemon data with Suspense
   return (
     <Suspense fallback={<PokemonDetailsSkeleton />}>
@@ -193,3 +189,5 @@ export default function PokemonResult({ pokemonName, onPokemonClick, onBackClick
     </Suspense>
   );
 }
+
+export default React.memo(PokemonResult);

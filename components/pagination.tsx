@@ -1,11 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { PaginationProps } from '../lib/interfaces/components';
 
-export default function Pagination({ currentPage, totalPages, onPageChange }: PaginationProps) {
-  // Function to generate page numbers with ellipsis for mobile responsiveness
-  const generatePageNumbers = () => {
+function Pagination({ currentPage, totalPages, onPageChange }: PaginationProps) {
+  // Memoize the page numbers generation to avoid recalculation on every render
+  const pageNumbers = useMemo(() => {
     const pages = [];
     const maxVisiblePages = 5; // Maximum pages to show on larger screens
     
@@ -43,16 +43,31 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pa
     }
     
     return pages;
-  };
+  }, [currentPage, totalPages]);
 
-  const pageNumbers = generatePageNumbers();
+  // Use useCallback for stable function references
+  const handlePrevious = useCallback(() => {
+    if (currentPage > 1) {
+      onPageChange(currentPage - 1);
+    }
+  }, [currentPage, onPageChange]);
+
+  const handleNext = useCallback(() => {
+    if (currentPage < totalPages) {
+      onPageChange(currentPage + 1);
+    }
+  }, [currentPage, totalPages, onPageChange]);
+
+  const handlePageClick = useCallback((page: number) => {
+    onPageChange(page);
+  }, [onPageChange]);
 
   return (
     <div className="flex justify-center mt-8 px-4">
       <div className="flex items-center space-x-1 sm:space-x-2 overflow-x-auto max-w-full">
         {/* Previous Button */}
         <button
-          onClick={() => onPageChange(currentPage - 1)}
+          onClick={handlePrevious}
           disabled={currentPage === 1}
           className="flex-shrink-0 px-2 sm:px-3 py-1 text-sm sm:text-base rounded cursor-pointer hover:bg-emerald-500 hover:text-white border disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
@@ -68,7 +83,7 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pa
                 <span className="px-2 py-1 text-gray-500 select-none">...</span>
               ) : (
                 <button
-                  onClick={() => onPageChange(page as number)}
+                  onClick={() => handlePageClick(page as number)}
                   className={`flex-shrink-0 cursor-pointer px-2 sm:px-3 py-1 text-sm sm:text-base rounded-xl transition-colors ${
                     currentPage === page
                       ? 'bg-emerald-600 text-white border-2 border-emerald-700'
@@ -84,7 +99,7 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pa
         
         {/* Next Button */}
         <button
-          onClick={() => onPageChange(currentPage + 1)}
+          onClick={handleNext}
           disabled={currentPage === totalPages}
           className="flex-shrink-0 px-2 sm:px-3 py-1 text-sm sm:text-base rounded border cursor-pointer hover:bg-emerald-500 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
@@ -95,3 +110,6 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pa
     </div>
   );
 }
+
+// Memoize the component to prevent unnecessary re-renders
+export default React.memo(Pagination);

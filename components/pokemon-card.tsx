@@ -6,7 +6,7 @@ import { Card, CardContent, CardTitle } from '@/components/ui/Card';
 import { PokemonCardProps } from '@/lib/interfaces/components';
 import ImageWithFallback from '@/components/ui/ImageWithFallback';
 
-export default function PokemonCard({ pokemon, onClick }: PokemonCardProps) {
+function PokemonCard({ pokemon, onClick }: PokemonCardProps) {
   const handleClick = (e: React.MouseEvent) => {
     if (onClick) {
       e.preventDefault();
@@ -43,3 +43,6 @@ export default function PokemonCard({ pokemon, onClick }: PokemonCardProps) {
     </Link>
   );
 }
+
+// Memoize the component to prevent unnecessary re-renders
+export default React.memo(PokemonCard);
