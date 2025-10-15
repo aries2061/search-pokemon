@@ -96,7 +96,7 @@ A modern, high-performance Pokémon search application built with cutting-edge w
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/aries2061/search-pokemon.git
    cd search-pokemon
    ```
 
