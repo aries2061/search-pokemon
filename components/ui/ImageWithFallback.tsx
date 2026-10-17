@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 
 interface ImageWithFallbackProps {
@@ -33,11 +33,13 @@ export default function ImageWithFallback({
   const [imgSrc, setImgSrc] = useState(src);
   const [hasError, setHasError] = useState(false);
 
-  // Update imgSrc when src prop changes
-  useEffect(() => {
+  // Reset imgSrc when src prop changes
+  const [prevSrc, setPrevSrc] = useState(src);
+  if (src !== prevSrc) {
+    setPrevSrc(src);
     setImgSrc(src);
     setHasError(false);
-  }, [src]);
+  }
 
   const handleError = () => {
     if (!hasError) {

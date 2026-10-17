@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import React, { useEffect, useMemo, Suspense, lazy } from 'react';
 import { useQuery } from '@apollo/client/react';
 import { useRouter } from 'next/navigation';
 import { GET_POKEMON } from '@/lib/graphql/queries';
 import { PokemonQueryResponse } from '@/lib/types';
 import PokemonNotFound from '@/components/not-found';
-import { downloadAndCompressImage, useOnlineStatus } from '@/lib/utils';
+import { downloadAndCompressImage, useOnlineStatus, useIsMounted } from '@/lib/utils';
 
 import { PokemonResultProps } from '@/lib/interfaces/components';
 import { Pokemon } from '@/lib/types';
@@ -20,9 +20,7 @@ import { PokemonDetailsSkeleton } from '@/components/ui/PokemonDetailsSkeleton';
 export default function PokemonResult({ pokemonName, onPokemonClick, onBackClick }: PokemonResultProps) {
   const router = useRouter();
   const isOnline = useOnlineStatus();
-  const [localPokemon, setLocalPokemon] = useState<Pokemon | null>(null);
-  const [isLocalLoading, setIsLocalLoading] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
+  const isMounted = useIsMounted();
   
   // Only run GraphQL query if online
   const { loading: graphqlLoading, error: graphqlError, data } = useQuery<PokemonQueryResponse>(GET_POKEMON, {
@@ -30,10 +28,18 @@ export default function PokemonResult({ pokemonName, onPokemonClick, onBackClick
     skip: !pokemonName || !isOnline,
   });
 
-  // Combined loading state - show loading if either local or GraphQL is loading
-  const loading = isLocalLoading || (isOnline && graphqlLoading);
+  // Check localStorage first for the Pokemon data (derived once mounted)
+  const localPokemon = useMemo<Pokemon | null>(() => {
+    if (!pokemonName || !isMounted) return null;
+    const recentSearches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
+    return recentSearches.find((p: Pokemon) =>
+      p.name.toLowerCase() === pokemonName.toLowerCase()
+    ) || null;
+  }, [pokemonName, isMounted]);
+
+  const loading = isOnline && graphqlLoading;
   // Combined error state
-  const error = isOnline ? graphqlError : (!localPokemon && !isLocalLoading);
+  const error = isOnline ? graphqlError : !localPokemon;
 
   const handleEvolutionClick = (name: string) => {
     if (onPokemonClick) {
@@ -42,31 +48,6 @@ export default function PokemonResult({ pokemonName, onPokemonClick, onBackClick
       router.replace(`/?search=${encodeURIComponent(name)}`);
     }
   };
-  
-  // Set mounted state after component mounts
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-  
-  // Check localStorage first for the Pokemon data
-  useEffect(() => {
-    if (!pokemonName || !isMounted) {
-      setIsLocalLoading(false);
-      return;
-    }
-    
-    setIsLocalLoading(true);
-    const recentSearches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
-    const foundPokemon = recentSearches.find((p: Pokemon) => 
-      p.name.toLowerCase() === pokemonName.toLowerCase()
-    );
-    
-    if (foundPokemon) {
-      setLocalPokemon(foundPokemon);
-    }
-    
-    setIsLocalLoading(false);
-  }, [pokemonName, isMounted]);
   
   // Store found Pokemon data in localStorage - moved before conditional returns
   useEffect(() => {

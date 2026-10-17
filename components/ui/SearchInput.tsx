@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, FormEvent, useRef } from 'react';
+import React, { useState, useEffect, useMemo, FormEvent, useRef } from 'react';
 import { SearchInputProps } from '../../lib/interfaces/ui';
 import { getSuggestions } from '../../lib/pokemonSearchUtils';
 
@@ -13,27 +13,24 @@ export function SearchInput({
   onChange,
 }: SearchInputProps) {
   const [query, setQuery] = useState(value !== undefined ? value : initialValue);
-  const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
   // Update internal query when controlled value changes
-  useEffect(() => {
+  const [prevValue, setPrevValue] = useState(value);
+  if (value !== prevValue) {
+    setPrevValue(value);
     if (value !== undefined) {
       setQuery(value);
     }
-  }, [value]);
+  }
 
-  useEffect(() => {
-    // Update suggestions when query changes
-    if (query.trim()) {
-      const matchingSuggestions = getSuggestions(query);
-      setSuggestions(matchingSuggestions);
-    } else {
-      setSuggestions([]);
-    }
-  }, [query]);
+  // Suggestions are derived from the query
+  const suggestions = useMemo(
+    () => (query.trim() ? getSuggestions(query) : []),
+    [query]
+  );
 
   useEffect(() => {
     // Handle clicks outside the suggestions dropdown

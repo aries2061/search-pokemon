@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import imageCompression from "browser-image-compression"
+import { useSyncExternalStore } from "react"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -60,4 +61,11 @@ export function useOnlineStatus() {
     isOnline: checkOnlineStatus(),
     checkOnlineStatus
   };
+}
+
+const subscribeNoop = () => () => {}
+
+// False during SSR/hydration, true once mounted on the client
+export function useIsMounted() {
+  return useSyncExternalStore(subscribeNoop, () => true, () => false)
 }

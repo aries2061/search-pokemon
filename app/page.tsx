@@ -1,7 +1,8 @@
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useState, useEffect, Suspense, lazy } from 'react';
+import { useState, useEffect, useMemo, Suspense, lazy } from 'react';
+import { useIsMounted } from '@/lib/utils';
 import { useQuery } from '@apollo/client/react';
 import Image from 'next/image';
 import { SearchInput } from '@/components/ui/SearchInput';
@@ -21,30 +22,34 @@ function HomeContent() {
   
   const [currentPage, setCurrentPage] = useState(1);
   const POKEMON_PER_PAGE = 16;
-  const [totalPages, setTotalPages] = useState(1);
-  const [shouldFetchNames, setShouldFetchNames] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
-  const [allPokemons, setAllPokemons] = useState<Pokemon[]>([]);
-  const [totalPokemonCount, setTotalPokemonCount] = useState(0);
+  // Only fetch the names when they are missing from localStorage
+  const [shouldFetchNames] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      return !localStorage.getItem('pokemonNames');
+    } catch (e) {
+      // If localStorage access fails, skip silently
+      console.error('Failed to access localStorage:', e);
+      return false;
+    }
+  });
+  const isMounted = useIsMounted();
   const [searchInputValue, setSearchInputValue] = useState(searchQuery);
-  
-  // Navigation history state - stack of Pokemon names with localStorage persistence
-  const [navigationHistory, setNavigationHistory] = useState<string[]>([]);
 
-  // Load navigation history from localStorage on mount
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedHistory = localStorage.getItem('pokemon-navigation-history');
-      if (savedHistory) {
-        try {
-          const parsedHistory = JSON.parse(savedHistory);
-          setNavigationHistory(parsedHistory);
-        } catch (error) {
-          console.error('Error parsing navigation history from localStorage:', error);
-        }
+  // Navigation history state - stack of Pokemon names with localStorage persistence
+  // (loaded from localStorage on first client render)
+  const [navigationHistory, setNavigationHistory] = useState<string[]>(() => {
+    if (typeof window === 'undefined') return [];
+    const savedHistory = localStorage.getItem('pokemon-navigation-history');
+    if (savedHistory) {
+      try {
+        return JSON.parse(savedHistory);
+      } catch (error) {
+        console.error('Error parsing navigation history from localStorage:', error);
       }
     }
-  }, []);
+    return [];
+  });
 
   // Save navigation history to localStorage whenever it changes
   useEffect(() => {
@@ -65,11 +70,6 @@ function HomeContent() {
     }
   }, [searchQuery]);
 
-  // Set mounted state after component mounts
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
   // Clear navigation history only when manually navigating to home page (no search query)
   useEffect(() => {
     if (!searchQuery && isMounted && navigationHistory.length > 0) {
@@ -81,6 +81,8 @@ function HomeContent() {
         // We can detect this by checking if the last item in history matches current search
         const lastHistoryItem = navigationHistory[navigationHistory.length - 1];
         if (!lastHistoryItem || lastHistoryItem.toLowerCase() !== (searchInputValue || '').toLowerCase()) {
+          // Syncs React state with the URL/localStorage after navigation
+          // eslint-disable-next-line react-hooks/set-state-in-effect
           setNavigationHistory([]);
           // Also clear from localStorage
           if (typeof window !== 'undefined') {
@@ -91,20 +93,6 @@ function HomeContent() {
     }
   }, [searchQuery, isMounted, navigationHistory, searchInputValue]);
 
-  // On first load, populate localStorage with all Pokémon names if missing
-  useEffect(() => {
-    if (!isMounted) return;
-    try {
-      const existing = localStorage.getItem('pokemonNames');
-      if (!existing) {
-        setShouldFetchNames(true);
-      }
-    } catch (e) {
-      // If localStorage access fails, skip silently
-      console.error('Failed to access localStorage:', e);
-    }
-  }, [isMounted]);
-
   // Fetch all Pokemon data after component mounts
   const { data: allPokemonsData } = useQuery<{ pokemons: Pokemon[] }>(GET_POKEMONS, {
     variables: { first: 1000 }, // Fetch a large number to get all Pokemon
@@ -112,14 +100,12 @@ function HomeContent() {
   });
 
   // Process all Pokemon data
-  useEffect(() => {
-    if (!allPokemonsData?.pokemons || !isMounted) return;
-    
-    const pokemonData = allPokemonsData.pokemons;
-    setAllPokemons(pokemonData);
-    setTotalPokemonCount(pokemonData.length);
-    setTotalPages(Math.ceil(pokemonData.length / POKEMON_PER_PAGE));
-  }, [allPokemonsData, isMounted]);
+  const allPokemons = useMemo<Pokemon[]>(
+    () => (isMounted && allPokemonsData?.pokemons) || [],
+    [allPokemonsData, isMounted]
+  );
+  const totalPokemonCount = allPokemons.length;
+  const totalPages = Math.max(1, Math.ceil(totalPokemonCount / POKEMON_PER_PAGE));
 
   // Fetch Pokémon names only when needed for search suggestions
   const { data: pokemonNamesData } = useQuery<{ pokemons: { name: string }[] }>(GET_POKEMONS, {
@@ -136,8 +122,6 @@ function HomeContent() {
     } catch (e) {
       // Fail silently to avoid impacting UI
       console.error('Failed to persist Pokémon names to localStorage:', e);
-    } finally {
-      setShouldFetchNames(false);
     }
   }, [pokemonNamesData, isMounted]);
 
