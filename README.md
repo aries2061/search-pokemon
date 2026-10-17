@@ -1,6 +1,6 @@
 # 🔍 Pokémon Search Application
 
-**Developed by:** [Aung Thura](https://www.linkedin.com/in/aung-thura-atr/)
+**Developed by:** - ?
 
 A modern, high-performance Pokémon search application built with cutting-edge web technologies. This application demonstrates advanced React patterns, performance optimization techniques, and comprehensive testing strategies.
 
@@ -31,6 +31,12 @@ A modern, high-performance Pokémon search application built with cutting-edge w
 - **Jest 30.2.0** - JavaScript testing framework
 - **React Testing Library 16.3.0** - React component testing utilities
 - **jsdom** - DOM implementation for testing
+
+## 📱 Progressive Web App
+- Installable via `app/manifest.ts` and icons in `public/icons/`
+- Hand-written service worker (`public/sw.js`) caches the app shell, static assets and Pokémon images; registered in production builds only
+- Recently searched Pokémon remain available offline (stored in `localStorage`)
+- Test it with `npm run build && npm start`, then use Chrome DevTools › Application
 
 ## ✨ Key Features
 

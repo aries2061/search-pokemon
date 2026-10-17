@@ -1,9 +1,10 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { Providers } from "./providers";
 import "../public/fonts/fonts.css";
 import ErrorBoundary from "@/components/ui/ErrorBoundary";
+import ServiceWorkerRegister from "@/components/service-worker-register";
 
 const geistSans = localFont({
   src: [
@@ -27,9 +28,20 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "Pokémon Search App",
   description: "Search for Pokémon and view their details",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: "Pokédex",
+    statusBarStyle: "default",
+  },
   icons: {
     icon: '/favicon.ico',
+    apple: '/icons/apple-touch-icon.png',
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#fbbf24",
 };
 
 export default function RootLayout({
@@ -55,6 +67,7 @@ export default function RootLayout({
         }}
         suppressHydrationWarning={true}
       >
+        <ServiceWorkerRegister />
         <ErrorBoundary>
           <Providers>{children}</Providers>
         </ErrorBoundary>

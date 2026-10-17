@@ -48,19 +48,22 @@ export async function downloadAndCompressImage(imageUrl: string, pokemonName: st
   }
 }
 
-export function useOnlineStatus() {
-  if (typeof window === 'undefined') {
-    return { isOnline: true, checkOnlineStatus: () => true };
-  }
-  
-  const checkOnlineStatus = () => {
-    return navigator.onLine;
+function subscribeOnlineStatus(callback: () => void) {
+  window.addEventListener('online', callback);
+  window.addEventListener('offline', callback);
+  return () => {
+    window.removeEventListener('online', callback);
+    window.removeEventListener('offline', callback);
   };
-  
-  return { 
-    isOnline: checkOnlineStatus(),
-    checkOnlineStatus
-  };
+}
+
+// Tracks navigator.onLine; assumes online during SSR
+export function useOnlineStatus(): boolean {
+  return useSyncExternalStore(
+    subscribeOnlineStatus,
+    () => navigator.onLine,
+    () => true
+  );
 }
 
 const subscribeNoop = () => () => {}
